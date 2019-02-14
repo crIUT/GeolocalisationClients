@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    // TODO http://androidopentutorials.com/android-sqlite-join-multiple-tables-example/
+    // http://androidopentutorials.com/android-sqlite-join-multiple-tables-example/
 
     private static final String DATABASE_NAME = "geolocalisationclients.db";
     private static final int DATABASE_VERSION = 1;
