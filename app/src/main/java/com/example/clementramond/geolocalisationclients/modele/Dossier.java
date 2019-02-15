@@ -6,6 +6,15 @@ public class Dossier {
 
     private String nom;
 
+    public Dossier() {
+        super();
+    }
+
+    public Dossier(int id, String nom) {
+        this.id = id;
+        this.nom = nom;
+    }
+
     public int getId() {
         return id;
     }

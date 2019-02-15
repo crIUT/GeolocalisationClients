@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class DroitDAO extends GeolocClientsDAO {
 
-    private static final String WHERE_ID_EQUALS = DBHelper.DROIT_DROIT + " ='?'";
+    private static final String WHERE_ID_EQUALS = DBHelper.DROIT_COLUMNS[DBHelper.DROIT_DROIT] + " ='?'";
     
     public DroitDAO(Context context) {
         super(context);
@@ -20,14 +20,14 @@ public class DroitDAO extends GeolocClientsDAO {
 
     public long save(Droit droit) {
         ContentValues values = new ContentValues();
-        values.put(DBHelper.DROIT_DROIT, droit.getDroit());
+        values.put(DBHelper.DROIT_COLUMNS[DBHelper.DROIT_DROIT], droit.getDroit());
 
         return database.insert(DBHelper.TABLE_DROIT, null, values);
     }
 
     public long update(Droit droit) {
         ContentValues values = new ContentValues();
-        values.put(DBHelper.DROIT_DROIT, droit.getDroit());
+        values.put(DBHelper.DROIT_COLUMNS[DBHelper.DROIT_DROIT], droit.getDroit());
 
         long result = database.update(DBHelper.TABLE_DROIT, values, WHERE_ID_EQUALS,
             new String[] { String.valueOf(droit.getDroit()) });
@@ -45,7 +45,7 @@ public class DroitDAO extends GeolocClientsDAO {
         Cursor cursor = database.query(
             DBHelper.TABLE_DROIT,
             new String[] {
-                DBHelper.DROIT_DROIT
+                DBHelper.DROIT_COLUMNS[DBHelper.DROIT_DROIT]
             },
             null, null, null, null, null
         );

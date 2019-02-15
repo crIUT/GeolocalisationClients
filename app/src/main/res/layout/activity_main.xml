@@ -5,12 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/simpleMargin"
-    tools:context=".activity.MainActivity">
+    tools:context=".activity.MainActivity"
+    android:orientation="vertical">
 
     <Switch
         android:id="@+id/geolocSwitch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Géolocalisation"/>
+
+    <ListView
+        android:id="@+id/dossiers"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </LinearLayout>
