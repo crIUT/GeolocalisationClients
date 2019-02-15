@@ -9,55 +9,66 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Switch;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
-import com.example.clementramond.geolocalisationclients.database.DBHelper;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
-import com.example.clementramond.geolocalisationclients.modele.Dossier;
+import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
 import com.example.clementramond.geolocalisationclients.service.LocationService;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener {
 
     private Switch geolocSwitch;
 
-    private ListView dossiers;
+    private ListView list;
+
+    private Spinner tables;
 
     private ComponentName locationServiceComponentName;
     private ComponentName serviceComponentName;
 
     private SharedPreferences preferences;
 
-    private DossierDAO accesDossiers;
-    private ArrayAdapter<Dossier> adapteurDossier;
-    private ArrayList<Dossier> dossiersFromCursor;
+    private ArrayAdapter<Object> adapteurObject;
+    private SpinnerAdapter adapteurTable;
+    private ArrayList<Object> objectsFromCursor;
+
+    private static final String[] TABLES = new String[] {
+        "Dossiers",
+        "Droits",
+        "Utilisateurs",
+        "Catégories",
+        "Sous-catégories",
+        "Clients",
+        "Géolocalisations"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        accesDossiers = new DossierDAO(this);
+        objectsFromCursor = new ArrayList<>();
 
-        /* Initialisation de la liste de dossier */
+        list = findViewById(R.id.dossiers);
+        adapteurObject = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, objectsFromCursor);
+        list.setAdapter(adapteurObject);
 
-        dossiers = findViewById(R.id.dossiers);
+        tables = findViewById(R.id.tables);
+        adapteurTable = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TABLES);
 
-        dossiersFromCursor = accesDossiers.getAllDossiers();
-
-        adapteurDossier = new ArrayAdapter<>(
-            this, android.R.layout.simple_list_item_1, dossiersFromCursor
-        );
-
-        dossiers.setAdapter(adapteurDossier);
-
-        /* ------------------------------------- */
+        tables.setAdapter(adapteurTable);
+        tables.setOnItemSelectedListener(this);
 
         preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
 
@@ -93,5 +104,43 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
             );
         }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        switch (i) {
+            case 0:
+                DossierDAO dossierDAO = new DossierDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(dossierDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
+                break;
+            case 1:
+                DroitDAO droitDAO = new DroitDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(droitDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
+                break;
+            case 2:
+
+                break;
+            case 3:
+
+                break;
+            case 4:
+
+                break;
+            case 5:
+
+                break;
+            case 6:
+
+                break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
     }
 }

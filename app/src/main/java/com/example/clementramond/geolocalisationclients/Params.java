@@ -1,7 +1,5 @@
 package com.example.clementramond.geolocalisationclients;
 
-import java.util.ArrayList;
-
 public class Params {
 
     public final static int REQ_ACCESS_LOCATION = 0;

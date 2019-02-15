@@ -6,13 +6,13 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.clementramond.geolocalisationclients.database.DBHelper;
 
-public class GeolocClientsDAO {
+public class GeolocClientsDBDAO {
     
     protected SQLiteDatabase database;
     private DBHelper dbHelper;
     private Context mContext;
 
-    public GeolocClientsDAO(Context context) {
+    public GeolocClientsDBDAO(Context context) {
         this.mContext = context;
         dbHelper = DBHelper.getHelper(mContext);
         open();

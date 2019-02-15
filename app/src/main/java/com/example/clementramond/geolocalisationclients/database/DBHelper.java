@@ -5,9 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
-
-import java.util.ArrayList;
+import com.example.clementramond.geolocalisationclients.modele.Droit;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -202,7 +202,16 @@ public class DBHelper extends SQLiteOpenHelper {
             new Dossier(5, "Dossier 5")
         };
         for (Dossier dossier : dossiers) {
-            db.insert(TABLE_DOSSIER, null, DossierDAO.dossierToContentValues(dossier));
+            db.insert(TABLE_DOSSIER, null, DossierDAO.toContentValues(dossier));
+        }
+
+        Droit[] droits = new Droit[]{
+            new Droit("user"),
+            new Droit("admin"),
+            new Droit("super-admin")
+        };
+        for (Droit droit : droits) {
+            db.insert(TABLE_DROIT, null, DroitDAO.toContentValues(droit));
         }
     }
 
