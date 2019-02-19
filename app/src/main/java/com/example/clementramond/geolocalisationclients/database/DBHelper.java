@@ -4,10 +4,20 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.SousCategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
+import com.example.clementramond.geolocalisationclients.modele.Categorie;
+import com.example.clementramond.geolocalisationclients.modele.Client;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
 import com.example.clementramond.geolocalisationclients.modele.Droit;
+import com.example.clementramond.geolocalisationclients.modele.SousCategorie;
+import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
+
+import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -213,6 +223,60 @@ public class DBHelper extends SQLiteOpenHelper {
         for (Droit droit : droits) {
             db.insert(TABLE_DROIT, null, DroitDAO.toContentValues(droit));
         }
+
+        ArrayList<Utilisateur> utilisateurs = new ArrayList<>();
+        Utilisateur utilisateur;
+        Dossier dossier;
+        utilisateur = new Utilisateur("1_clement_ramond", "", "", "",
+            null,
+            new Droit("user")
+        );
+        dossier = new Dossier();
+        dossier.setId(1);
+        utilisateur.setDossier(dossier);
+        utilisateurs.add(utilisateur);
+
+        utilisateur = new Utilisateur("2_clement_ramond", "", "", "",
+            null,
+            new Droit("user")
+        );
+        dossier = new Dossier();
+        dossier.setId(2);
+        utilisateur.setDossier(dossier);
+        utilisateurs.add(utilisateur);
+        for (Utilisateur utili : utilisateurs) {
+            db.insert(TABLE_UTILISATEUR, null, UtilisateurDAO.toContentValues(utili));
+        }
+
+        Categorie[] categories = new Categorie[]{
+            new Categorie("DUT GEA"),
+            new Categorie("DUT Informatique"),
+            new Categorie("LPMMS")
+        };
+        for (Categorie categorie : categories) {
+            db.insert(TABLE_CATEGORIE, null, CategorieDAO.toContentValues(categorie));
+        }
+
+        SousCategorie[] sousCategories = new SousCategorie[]{
+            new SousCategorie( categories[0], "1ère année"),
+            new SousCategorie( categories[1], "1ère année"),
+            new SousCategorie( categories[2], "1ère année"),
+            new SousCategorie( categories[0], "2ème année"),
+            new SousCategorie( categories[1], "2ème année")
+        };
+        for (SousCategorie sousCategorie : sousCategories) {
+            db.insert(TABLE_SOUS_CATEGORIE, null, SousCategorieDAO.toContentValues(sousCategorie));
+        }
+
+        Client[] clients = new Client[]{
+            new Client(1, sousCategories[0], "ROUS", null, "12000",
+                null, null, null, null),
+            new Client(2, sousCategories[3], "RAMOND", null, "81430",
+                null, null, null, null)
+        };
+        for (Client client : clients) {
+            db.insert(TABLE_CLIENT, null, ClientDAO.toContentValues(client));
+        }
     }
 
     @Override
@@ -227,7 +291,7 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public static String getSelectFrom(String[] columns, String table) {
+    private static String getSelectFrom(String table, String[] columns) {
         int taille = columns.length;
         if (taille <= 0) {
             return null;
@@ -241,31 +305,74 @@ public class DBHelper extends SQLiteOpenHelper {
         return requete;
     }
 
+    private static String getSelectFrom(String[] tables, String[]... columns) {
+        int nbTable = columns.length;
+        int taille;
+        if (nbTable <= 0) {
+            return null;
+        }
+        String requete = "select ";
+        for (int i=0 ; i < nbTable ; i++) {
+            taille = columns[i].length;
+            for (int j=0 ; j < taille ; j++) {
+                requete += columns[i][j]+(i == nbTable-1 && j == taille-1 ? "" : ", ");
+            }
+        }
+        requete += " from ";
+        for (int i=0 ; i < nbTable ; i++) {
+            requete += tables[i]+(i == nbTable-1 ? "" : ", ");
+        }
+
+        return requete;
+    }
+
     public static String getSelectFromDossier() {
-        return getSelectFrom(DOSSIER_COLUMNS, TABLE_DOSSIER);
+        return getSelectFrom(TABLE_DOSSIER, DOSSIER_COLUMNS);
     }
 
     public static String getSelectFromDroit() {
-        return getSelectFrom(DROIT_COLUMNS, TABLE_DROIT);
+        return getSelectFrom(TABLE_DROIT, DROIT_COLUMNS);
     }
 
     public static String getSelectFromUtilisateur() {
-        return getSelectFrom(UTILISATEUR_COLUMNS, TABLE_UTILISATEUR);
+        String requete = getSelectFrom(new String[]{TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
+            UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
+        requete += " where " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT];
+
+        return requete;
     }
 
     public static String getSelectFromCategorie() {
-        return getSelectFrom(CATEGORIE_COLUMNS, TABLE_CATEGORIE);
+        return getSelectFrom(TABLE_CATEGORIE, CATEGORIE_COLUMNS);
     }
 
     public static String getSelectFromSousCategorie() {
-        return getSelectFrom(SOUS_CATEGORIE_COLUMNS, TABLE_SOUS_CATEGORIE);
+        String requete = getSelectFrom(new String[]{TABLE_SOUS_CATEGORIE, TABLE_CATEGORIE},
+            SOUS_CATEGORIE_COLUMNS, CATEGORIE_COLUMNS);
+        requete += " where " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_CATEGORIE]
+            + " = " + CATEGORIE_COLUMNS[CATEGORIE_NOM];
+
+        return requete;
     }
 
     public static String getSelectFromClient() {
-        return getSelectFrom(CLIENT_COLUMNS, TABLE_CLIENT);
+        String requete = getSelectFrom(new String[]{TABLE_CLIENT, TABLE_SOUS_CATEGORIE},
+            CLIENT_COLUMNS, SOUS_CATEGORIE_COLUMNS);
+        requete += " where " + CLIENT_COLUMNS[CLIENT_SOUS_CATEGORIE]
+            + " = " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_NOM];
+        requete += " and " + CLIENT_COLUMNS[CLIENT_CATEGORIE]
+            + " = " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_CATEGORIE];
+
+        return requete;
     }
 
     public static String getSelectFromGeoloc() {
-        return getSelectFrom(GEOLOC_COLUMNS, TABLE_GEOLOC);
+        String requete = getSelectFrom(new String[]{TABLE_GEOLOC, TABLE_UTILISATEUR},
+            GEOLOC_COLUMNS, UTILISATEUR_COLUMNS);
+        requete += " where " + GEOLOC_COLUMNS[GEOLOC_UTILISATEUR]
+            + " = " + UTILISATEUR_COLUMNS[UTILISATEUR_PSEUDO];
+
+        return requete;
     }
 }

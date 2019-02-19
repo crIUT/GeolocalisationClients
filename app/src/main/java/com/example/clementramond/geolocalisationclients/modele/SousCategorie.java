@@ -6,6 +6,10 @@ public class SousCategorie {
 
     private String nom;
 
+    public SousCategorie() {
+        super();
+    }
+
     public SousCategorie(Categorie categorie, String nom) {
         this.categorie = categorie;
         this.nom = nom;
@@ -29,6 +33,6 @@ public class SousCategorie {
 
     @Override
     public String toString() {
-        return nom;
+        return categorie + " - " + nom;
     }
 }

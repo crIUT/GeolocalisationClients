@@ -20,8 +20,12 @@ import android.widget.Switch;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
+import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.SousCategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.service.LocationService;
 
 import java.util.ArrayList;
@@ -122,20 +126,35 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 adapteurObject.notifyDataSetChanged();
                 break;
             case 2:
-
+                UtilisateurDAO utilisateurDAO = new UtilisateurDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(utilisateurDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
                 break;
             case 3:
-
+                CategorieDAO categorieDAO = new CategorieDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(categorieDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
                 break;
             case 4:
-
+                SousCategorieDAO sousCategorieDAO = new SousCategorieDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(sousCategorieDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
                 break;
             case 5:
-
+                ClientDAO clientDAO = new ClientDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(clientDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
                 break;
-            case 6:
-
-                break;
+//            case 6:
+//                GeolocDAO geolocDAO = new GeolocDAO(this);
+//                objectsFromCursor.clear();
+//                objectsFromCursor.addAll(geolocDAO.getAll());
+//                adapteurObject.notifyDataSetChanged();
+//                break;
         }
     }
 

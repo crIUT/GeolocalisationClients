@@ -12,13 +12,31 @@ public class Client {
 
     private String codePostal;
 
-    private String telephone_fixe;
+    private String telephoneFixe;
 
-    private String telephone_portable;
+    private String telephonePortable;
 
     private Double latitude;
 
     private Double longitude;
+
+    public Client() {
+        super();
+    }
+
+    public Client(int id, SousCategorie sousCategorie, String nom, String prenom,
+                  String codePostal, String telephoneFixe, String telephonePortable,
+                  Double latitude, Double longitude) {
+        this.id = id;
+        this.sousCategorie = sousCategorie;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.codePostal = codePostal;
+        this.telephoneFixe = telephoneFixe;
+        this.telephonePortable = telephonePortable;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
     public int getId() {
         return id;
@@ -60,20 +78,20 @@ public class Client {
         this.codePostal = codePostal;
     }
 
-    public String getTelephone_fixe() {
-        return telephone_fixe;
+    public String getTelephoneFixe() {
+        return telephoneFixe;
     }
 
-    public void setTelephone_fixe(String telephone_fixe) {
-        this.telephone_fixe = telephone_fixe;
+    public void setTelephoneFixe(String telephone_fixe) {
+        this.telephoneFixe = telephone_fixe;
     }
 
-    public String getTelephone_portable() {
-        return telephone_portable;
+    public String getTelephonePortable() {
+        return telephonePortable;
     }
 
-    public void setTelephone_portable(String telephone_portable) {
-        this.telephone_portable = telephone_portable;
+    public void setTelephonePortable(String telephone_portable) {
+        this.telephonePortable = telephone_portable;
     }
 
     public Double getLatitude() {
@@ -94,6 +112,6 @@ public class Client {
 
     @Override
     public String toString() {
-        return nom+" "+prenom;
+        return id+"/"+sousCategorie+"/"+nom+"/"+codePostal;
     }
 }

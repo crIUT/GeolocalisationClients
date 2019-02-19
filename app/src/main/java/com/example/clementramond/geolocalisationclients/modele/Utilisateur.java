@@ -14,6 +14,19 @@ public class Utilisateur {
 
     private Droit droit;
 
+    public Utilisateur() {
+        super();
+    }
+
+    public Utilisateur(String pseudo, String nom, String prenom, String mdp, Dossier dossier, Droit droit) {
+        this.pseudo = pseudo;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.mdp = mdp;
+        this.dossier = dossier;
+        this.droit = droit;
+    }
+
     public String getPseudo() {
         return pseudo;
     }
@@ -64,6 +77,6 @@ public class Utilisateur {
 
     @Override
     public String toString() {
-        return pseudo;
+        return pseudo + '/' + dossier + "/" + droit;
     }
 }
