@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/simpleMargin"
     tools:context=".activity.MainActivity"
     android:orientation="vertical">
 
@@ -12,17 +11,27 @@
         android:id="@+id/geolocSwitch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/simpleMargin"
         android:text="Géolocalisation"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#808080"/>
 
     <Spinner
         android:id="@+id/tables"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginTop="@dimen/simpleMargin"
-        android:layout_marginBottom="@dimen/simpleMargin"/>
+        android:layout_height="30dp"
+        android:layout_margin="@dimen/simpleMargin"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#808080"/>
 
     <ListView
-        android:id="@+id/dossiers"
+        android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

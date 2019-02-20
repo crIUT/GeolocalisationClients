@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.PermissionChecker;
@@ -17,6 +18,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
@@ -24,13 +26,15 @@ import com.example.clementramond.geolocalisationclients.database.dao.CategorieDA
 import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.GeolocDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.SousCategorieDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
+import com.example.clementramond.geolocalisationclients.modele.Client;
 import com.example.clementramond.geolocalisationclients.service.LocationService;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener, AdapterView.OnItemClickListener {
 
     private Switch geolocSwitch;
 
@@ -64,9 +68,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
         objectsFromCursor = new ArrayList<>();
 
-        list = findViewById(R.id.dossiers);
+        list = findViewById(R.id.list);
         adapteurObject = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, objectsFromCursor);
         list.setAdapter(adapteurObject);
+        list.setOnItemClickListener(this);
 
         tables = findViewById(R.id.tables);
         adapteurTable = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TABLES);
@@ -82,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         geolocSwitch.setOnCheckedChangeListener(this);
 
         locationServiceComponentName = new ComponentName(this, LocationService.class);
+
+        Params.connectedUser = new UtilisateurDAO(this).getAll().get(0);
 
         int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permission != PermissionChecker.PERMISSION_GRANTED && preferences.getBoolean(Params.PREF_GEOLOC, false)) {
@@ -149,17 +156,45 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 objectsFromCursor.addAll(clientDAO.getAll());
                 adapteurObject.notifyDataSetChanged();
                 break;
-//            case 6:
-//                GeolocDAO geolocDAO = new GeolocDAO(this);
-//                objectsFromCursor.clear();
-//                objectsFromCursor.addAll(geolocDAO.getAll());
-//                adapteurObject.notifyDataSetChanged();
-//                break;
+            case 6:
+                GeolocDAO geolocDAO = new GeolocDAO(this);
+                objectsFromCursor.clear();
+                objectsFromCursor.addAll(geolocDAO.getAll());
+                adapteurObject.notifyDataSetChanged();
+                break;
         }
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        switch (view.getId()) {
+            case R.id.list:
+                if (tables.getSelectedItem().equals(TABLES[5])) {
+                    Client client = (Client) objectsFromCursor.get(i);
+                    // Appel de GoogleMap
+                    Double  lat = client.getLatitude(),
+                        lon = client.getLongitude();
+                    String position = client.getCodePostal();
+                    if (!(lat == Double.POSITIVE_INFINITY
+                        || lon == Double.POSITIVE_INFINITY)) {
+                        position = lat+","+lon;
+                    }
+                    String uri = "google.navigation:"+"q="+position;
+                    Uri gmmIntentUri = Uri.parse(uri);
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    if (mapIntent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(mapIntent);
+                    } else {
+                        Toast.makeText(this, "Google Maps n'est pas disponible", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+        }
     }
 }

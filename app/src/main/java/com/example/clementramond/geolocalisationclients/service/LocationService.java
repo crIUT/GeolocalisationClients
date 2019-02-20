@@ -14,6 +14,11 @@ import android.support.v4.content.PermissionChecker;
 import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
+import com.example.clementramond.geolocalisationclients.database.dao.GeolocDAO;
+import com.example.clementramond.geolocalisationclients.modele.Geolocalisation;
+import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
+
+import org.threeten.bp.LocalDateTime;
 
 public class LocationService extends IntentService {
 
@@ -27,6 +32,8 @@ public class LocationService extends IntentService {
 
     private int permission;
 
+    private GeolocDAO geolocDAO;
+
     /**
      * A constructor is required, and must call the super <code><a href="/reference/android/app/IntentService.html#IntentService(java.lang.String)">IntentService(String)</a></code>
      * constructor with a name for the worker thread.
@@ -38,6 +45,8 @@ public class LocationService extends IntentService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+
+        geolocDAO = new GeolocDAO(getApplicationContext());
 
         geoloc = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE).getBoolean(Params.PREF_GEOLOC, false);
 
@@ -115,9 +124,12 @@ public class LocationService extends IntentService {
         if (locationManager != null && permission == PermissionChecker.PERMISSION_GRANTED) {
             lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if (lastKnownLocation != null) {
-                // TODO enregistrer la longitude et la latitude
-                // lastKnownLocation.getLatitude();
-                // lastKnownLocation.getLongitude();
+                Geolocalisation geoloc = new Geolocalisation();
+                geoloc.setDateTime(LocalDateTime.now());
+                geoloc.setUtilisateur(Params.connectedUser);
+                geoloc.setLatitude(lastKnownLocation.getLatitude());
+                geoloc.setLongitude(lastKnownLocation.getLongitude());
+                geolocDAO.save(geoloc);
             }
         }
 

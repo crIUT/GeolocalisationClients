@@ -47,4 +47,9 @@ public class Geolocalisation {
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
+
+    @Override
+    public String toString() {
+        return dateTime.format(MYSQL_DTF) + "\n" + utilisateur + "\n lat : " + latitude + "\n lon : " + longitude;
+    }
 }

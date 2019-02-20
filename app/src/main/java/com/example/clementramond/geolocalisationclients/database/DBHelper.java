@@ -270,9 +270,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Client[] clients = new Client[]{
             new Client(1, sousCategories[0], "ROUS", null, "12000",
-                null, null, null, null),
+                null, null, 44.360111, 2.5768032),
             new Client(2, sousCategories[3], "RAMOND", null, "81430",
-                null, null, null, null)
+                null, null, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         };
         for (Client client : clients) {
             db.insert(TABLE_CLIENT, null, ClientDAO.toContentValues(client));
@@ -368,11 +368,19 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public static String getSelectFromGeoloc() {
-        String requete = getSelectFrom(new String[]{TABLE_GEOLOC, TABLE_UTILISATEUR},
-            GEOLOC_COLUMNS, UTILISATEUR_COLUMNS);
+        String requete = getSelectFrom(new String[]{TABLE_GEOLOC, TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
+            GEOLOC_COLUMNS, UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
         requete += " where " + GEOLOC_COLUMNS[GEOLOC_UTILISATEUR]
             + " = " + UTILISATEUR_COLUMNS[UTILISATEUR_PSEUDO];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT];
 
         return requete;
+    }
+
+    public static void main(String... args) {
+        String requete = getSelectFromGeoloc();
+        requete = requete.replaceAll(" (from|where)", "\n$1");
+        System.out.print(requete);
     }
 }

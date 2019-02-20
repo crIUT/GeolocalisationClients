@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.example.clementramond.geolocalisationclients.database.DBHelper;
+import com.example.clementramond.geolocalisationclients.modele.Dossier;
+import com.example.clementramond.geolocalisationclients.modele.Droit;
 import com.example.clementramond.geolocalisationclients.modele.Geolocalisation;
 import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 
@@ -77,14 +79,21 @@ public class GeolocDAO extends GeolocClientsDBDAO {
                 geoloc = new Geolocalisation();
                 geoloc.setDateTime(LocalDateTime.parse(c.getString(DBHelper.GEOLOC_DATETIME),
                     Geolocalisation.MYSQL_DTF));
+
                 utilisateur = new Utilisateur();
-                utilisateur.setPseudo();
-                utilisateur.setNom();
-                utilisateur.setPrenom();
-                utilisateur.setMdp();
-                utilisateur.setDossier();
-                utilisateur.setDroit();
-                geoloc.setUtilisateur();
+                utilisateur.setPseudo(c.getString(DBHelper.GEOLOC_UTILISATEUR));
+                utilisateur.setNom(c.getString(5));
+                utilisateur.setPrenom(c.getString(6));
+                utilisateur.setMdp(c.getString(7));
+                utilisateur.setDossier(new Dossier(
+                    c.getInt(10),
+                    c.getString(11)
+                ));
+                utilisateur.setDroit(new Droit(c.getString(12)));
+                geoloc.setUtilisateur(utilisateur);
+
+                geoloc.setLatitude(c.getDouble(DBHelper.GEOLOC_LATITUDE));
+                geoloc.setLongitude(c.getDouble(DBHelper.GEOLOC_LONGITUDE));
                 
                 geolocs.add(geoloc);
             }
@@ -96,8 +105,10 @@ public class GeolocDAO extends GeolocClientsDBDAO {
 
     public static ContentValues toContentValues(Geolocalisation geoloc) {
         ContentValues values = new ContentValues();
-        values.put(DBHelper.GEOLOC_COLUMNS[DBHelper.GEOLOC_NOM], geoloc.getNom());
-        values.put(DBHelper.GEOLOC_COLUMNS[DBHelper.GEOLOC_CATEGORIE], geoloc.getCategorie().getNom());
+        values.put(DBHelper.GEOLOC_COLUMNS[DBHelper.GEOLOC_DATETIME], geoloc.getDateTime().format(Geolocalisation.MYSQL_DTF));
+        values.put(DBHelper.GEOLOC_COLUMNS[DBHelper.GEOLOC_UTILISATEUR], geoloc.getUtilisateur().getPseudo());
+        values.put(DBHelper.GEOLOC_COLUMNS[DBHelper.GEOLOC_LATITUDE], geoloc.getLatitude());
+        values.put(DBHelper.GEOLOC_COLUMNS[DBHelper.GEOLOC_LONGITUDE], geoloc.getLongitude());
 
         return values;
     }
