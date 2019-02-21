@@ -123,7 +123,7 @@ public class LocationService extends IntentService {
         permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (locationManager != null && permission == PermissionChecker.PERMISSION_GRANTED) {
             lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if (lastKnownLocation != null) {
+            if (lastKnownLocation != null && Params.connectedUser != null) {
                 Geolocalisation geoloc = new Geolocalisation();
                 geoloc.setDateTime(LocalDateTime.now());
                 geoloc.setUtilisateur(Params.connectedUser);

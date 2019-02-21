@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Géolocalisation Clients</string>
+    <string name="title_activity_login">Connexion</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_pseudo">Pseudo</string>
+    <string name="prompt_password">Mot de passe</string>
+    <string name="action_sign_in">Connexion</string>
+    <string name="action_sign_in_short">Connexion</string>
+    <string name="error_incorrect_pseudo">Cet utilisateur n\'existe pas</string>
+    <string name="error_incorrect_password">Mot de passe invalide</string>
+    <string name="error_field_required">Ce champ est requis</string>
+    <string name="error_cannot_access_db">Echec d\'accès à la base de données</string>
+
+    <string name="synchronizing_db">Synchronisation de la base de données en cours</string>
+
+    <string name="menuParams">Paramètres</string>
 </resources>

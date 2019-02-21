@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.PermissionChecker;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
+import com.example.clementramond.geolocalisationclients.activity.asynctask.SynchronisationBD;
 import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
@@ -30,17 +30,20 @@ import com.example.clementramond.geolocalisationclients.database.dao.GeolocDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.SousCategorieDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.modele.Client;
+import com.example.clementramond.geolocalisationclients.modele.Dossier;
 import com.example.clementramond.geolocalisationclients.service.LocationService;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener, AdapterView.OnItemClickListener {
+public class MainActivity extends LoadingActivity implements  CompoundButton.OnCheckedChangeListener,
+                                                                AdapterView.OnItemSelectedListener,
+                                                                AdapterView.OnItemClickListener {
 
     private Switch geolocSwitch;
 
-    private ListView list;
+    private ListView lignesTable;
 
-    private Spinner tables;
+    private Spinner spinnerTables;
 
     private ComponentName locationServiceComponentName;
     private ComponentName serviceComponentName;
@@ -66,20 +69,23 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
+
+        super.setActivity(R.id.activity);
+        super.setLoading(R.id.loading);
+
         objectsFromCursor = new ArrayList<>();
 
-        list = findViewById(R.id.list);
+        lignesTable = findViewById(R.id.lignesTable);
         adapteurObject = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, objectsFromCursor);
-        list.setAdapter(adapteurObject);
-        list.setOnItemClickListener(this);
+        lignesTable.setAdapter(adapteurObject);
+        lignesTable.setOnItemClickListener(this);
 
-        tables = findViewById(R.id.tables);
-        adapteurTable = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TABLES);
+        spinnerTables = findViewById(R.id.spinnerTables);
+        adapteurTable = new ArrayAdapter<>(this, R.layout.custom_dropdown_item, TABLES);
 
-        tables.setAdapter(adapteurTable);
-        tables.setOnItemSelectedListener(this);
-
-        preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
+        spinnerTables.setAdapter(adapteurTable);
+        spinnerTables.setOnItemSelectedListener(this);
 
         geolocSwitch = findViewById(R.id.geolocSwitch);
         geolocSwitch.setChecked(preferences.getBoolean(Params.PREF_GEOLOC, true));
@@ -87,8 +93,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         geolocSwitch.setOnCheckedChangeListener(this);
 
         locationServiceComponentName = new ComponentName(this, LocationService.class);
-
-        Params.connectedUser = new UtilisateurDAO(this).getAll().get(0);
 
         int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permission != PermissionChecker.PERMISSION_GRANTED && preferences.getBoolean(Params.PREF_GEOLOC, false)) {
@@ -105,6 +109,33 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     }
 
     @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        if (Params.connectedUser == null) {
+            String pseudo = preferences.getString(Params.PREF_USER, null);
+            Params.connectedUser =
+                (pseudo==null) ? null : new UtilisateurDAO(this).getFromPseudo(pseudo);
+            if (Params.connectedUser == null) {
+                connexion();
+                return;
+            }
+        }
+
+        Dossier dossierUser = Params.connectedUser.getDossier();
+        if (Params.dossier == null && dossierUser != null) {
+            Params.dossier = dossierUser;
+        } else {
+            String idDossier = preferences.getString(Params.PREF_DOSSIER, null);
+            Params.dossier =
+                (idDossier==null) ? null : new DossierDAO(this).getFromId(idDossier);
+            if (Params.dossier == null) {
+                connexion();
+            }
+        }
+    }
+
+    @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(Params.PREF_GEOLOC, b);
@@ -112,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         if (b && PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PermissionChecker.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
             );
         }
     }
@@ -172,9 +203,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        switch (view.getId()) {
-            case R.id.list:
-                if (tables.getSelectedItem().equals(TABLES[5])) {
+        switch (adapterView.getId()) {
+            case R.id.lignesTable:
+                if (spinnerTables.getSelectedItem().equals(TABLES[5])) {
                     Client client = (Client) objectsFromCursor.get(i);
                     // Appel de GoogleMap
                     Double  lat = client.getLatitude(),
@@ -197,4 +228,26 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 break;
         }
     }
+
+    private void connexion() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    public void deconnexion(View view) {
+        Params.connectedUser = null;
+        Params.dossier = null;
+        preferences.edit()
+            .putString(Params.PREF_USER, null)
+            .putString(Params.PREF_DOSSIER, null)
+            .apply();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    public void synchroniser(View view) {
+        new SynchronisationBD(this).execute();
+    }
+
+
 }

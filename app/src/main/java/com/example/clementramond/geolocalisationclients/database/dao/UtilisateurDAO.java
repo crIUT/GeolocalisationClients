@@ -46,6 +46,13 @@ public class UtilisateurDAO extends GeolocClientsDBDAO {
         return database.rawQuery(requete, null);
     }
 
+    private Cursor getCursorWherePseudo(String pseudo) {
+        String requete = DBHelper.getSelectFromUtilisateur()
+            // Déjà le 'where' dans la chaine
+            + " AND " + WHERE_PSEUDO_EQUALS;
+        return database.rawQuery(requete, new String[]{pseudo});
+    }
+
     public ArrayList<Utilisateur> getAll() {
         return cursorToListe(getCursorAll());
     }
@@ -91,10 +98,14 @@ public class UtilisateurDAO extends GeolocClientsDBDAO {
         values.put(DBHelper.UTILISATEUR_COLUMNS[DBHelper.UTILISATEUR_NOM], utilisateur.getNom());
         values.put(DBHelper.UTILISATEUR_COLUMNS[DBHelper.UTILISATEUR_PRENOM], utilisateur.getPrenom());
         values.put(DBHelper.UTILISATEUR_COLUMNS[DBHelper.UTILISATEUR_MDP], utilisateur.getMdp());
-        values.put(DBHelper.UTILISATEUR_COLUMNS[DBHelper.UTILISATEUR_ID_DOSSIER], utilisateur.getDossier().getId());
+        Dossier dossier_utilisateur = utilisateur.getDossier();
+        values.put(DBHelper.UTILISATEUR_COLUMNS[DBHelper.UTILISATEUR_ID_DOSSIER], (dossier_utilisateur==null?null:dossier_utilisateur.getId()));
         values.put(DBHelper.UTILISATEUR_COLUMNS[DBHelper.UTILISATEUR_DROIT], utilisateur.getDroit().getDroit());
 
         return values;
     }
 
+    public Utilisateur getFromPseudo(String pseudo) {
+        return fromCursor(getCursorWherePseudo(pseudo));
+    }
 }

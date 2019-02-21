@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.example.clementramond.geolocalisationclients.database.DBHelper;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
+import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 
 import java.util.ArrayList;
 
@@ -42,6 +43,12 @@ public class DossierDAO extends GeolocClientsDBDAO {
             + " order by " + DBHelper.DOSSIER_COLUMNS[DBHelper.DOSSIER_NOM];
 
         return database.rawQuery(requete, null);
+    }
+
+    private Cursor getCursorWhereId(String id) {
+        String requete = DBHelper.getSelectFromDossier()
+            + " where " + WHERE_ID_EQUALS;
+        return database.rawQuery(requete, new String[]{id});
     }
 
     public ArrayList<Dossier> getAll() {
@@ -81,4 +88,7 @@ public class DossierDAO extends GeolocClientsDBDAO {
         return values;
     }
 
+    public Dossier getFromId(String id) {
+        return fromCursor(getCursorWhereId(id));
+    }
 }

@@ -227,13 +227,10 @@ public class DBHelper extends SQLiteOpenHelper {
         ArrayList<Utilisateur> utilisateurs = new ArrayList<>();
         Utilisateur utilisateur;
         Dossier dossier;
-        utilisateur = new Utilisateur("1_clement_ramond", "", "", "",
+        utilisateur = new Utilisateur("1_clement_ramond", "", "", "azer",
             null,
-            new Droit("user")
+            new Droit(Droit.DROITS[2])
         );
-        dossier = new Dossier();
-        dossier.setId(1);
-        utilisateur.setDossier(dossier);
         utilisateurs.add(utilisateur);
 
         utilisateur = new Utilisateur("2_clement_ramond", "", "", "",
@@ -337,8 +334,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static String getSelectFromUtilisateur() {
         String requete = getSelectFrom(new String[]{TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
             UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
-        requete += " where " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
-        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT];
+        requete += " where (" + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT]+")";
 
         return requete;
     }
@@ -350,8 +347,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static String getSelectFromSousCategorie() {
         String requete = getSelectFrom(new String[]{TABLE_SOUS_CATEGORIE, TABLE_CATEGORIE},
             SOUS_CATEGORIE_COLUMNS, CATEGORIE_COLUMNS);
-        requete += " where " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_CATEGORIE]
-            + " = " + CATEGORIE_COLUMNS[CATEGORIE_NOM];
+        requete += " where (" + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_CATEGORIE]
+            + " = " + CATEGORIE_COLUMNS[CATEGORIE_NOM]+")";
 
         return requete;
     }
@@ -359,10 +356,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static String getSelectFromClient() {
         String requete = getSelectFrom(new String[]{TABLE_CLIENT, TABLE_SOUS_CATEGORIE},
             CLIENT_COLUMNS, SOUS_CATEGORIE_COLUMNS);
-        requete += " where " + CLIENT_COLUMNS[CLIENT_SOUS_CATEGORIE]
+        requete += " where (" + CLIENT_COLUMNS[CLIENT_SOUS_CATEGORIE]
             + " = " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_NOM];
         requete += " and " + CLIENT_COLUMNS[CLIENT_CATEGORIE]
-            + " = " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_CATEGORIE];
+            + " = " + SOUS_CATEGORIE_COLUMNS[SOUS_CATEGORIE_CATEGORIE]+")";
 
         return requete;
     }
@@ -370,10 +367,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static String getSelectFromGeoloc() {
         String requete = getSelectFrom(new String[]{TABLE_GEOLOC, TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
             GEOLOC_COLUMNS, UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
-        requete += " where " + GEOLOC_COLUMNS[GEOLOC_UTILISATEUR]
+        requete += " where (" + GEOLOC_COLUMNS[GEOLOC_UTILISATEUR]
             + " = " + UTILISATEUR_COLUMNS[UTILISATEUR_PSEUDO];
         requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
-        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT]+")";
 
         return requete;
     }
