@@ -1,7 +1,6 @@
 package com.example.clementramond.geolocalisationclients.activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
-import com.example.clementramond.geolocalisationclients.activity.asynctask.SynchronisationBD;
 import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
@@ -35,11 +33,8 @@ import com.example.clementramond.geolocalisationclients.service.LocationService;
 
 import java.util.ArrayList;
 
-public class MainActivity extends LoadingActivity implements  CompoundButton.OnCheckedChangeListener,
-                                                                AdapterView.OnItemSelectedListener,
+public class MainActivity extends OptionsActivity implements  AdapterView.OnItemSelectedListener,
                                                                 AdapterView.OnItemClickListener {
-
-    private Switch geolocSwitch;
 
     private ListView lignesTable;
 
@@ -47,8 +42,6 @@ public class MainActivity extends LoadingActivity implements  CompoundButton.OnC
 
     private ComponentName locationServiceComponentName;
     private ComponentName serviceComponentName;
-
-    private SharedPreferences preferences;
 
     private ArrayAdapter<Object> adapteurObject;
     private SpinnerAdapter adapteurTable;
@@ -69,8 +62,6 @@ public class MainActivity extends LoadingActivity implements  CompoundButton.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
-
         super.setActivity(R.id.activity);
         super.setLoading(R.id.loading);
 
@@ -87,15 +78,10 @@ public class MainActivity extends LoadingActivity implements  CompoundButton.OnC
         spinnerTables.setAdapter(adapteurTable);
         spinnerTables.setOnItemSelectedListener(this);
 
-        geolocSwitch = findViewById(R.id.geolocSwitch);
-        geolocSwitch.setChecked(preferences.getBoolean(Params.PREF_GEOLOC, true));
-
-        geolocSwitch.setOnCheckedChangeListener(this);
-
         locationServiceComponentName = new ComponentName(this, LocationService.class);
 
         int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permission != PermissionChecker.PERMISSION_GRANTED && preferences.getBoolean(Params.PREF_GEOLOC, false)) {
+        if (permission != PermissionChecker.PERMISSION_GRANTED && preferences.getBoolean(Params.PREF_GEOLOC, true)) {
             ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
             );
@@ -132,19 +118,6 @@ public class MainActivity extends LoadingActivity implements  CompoundButton.OnC
             if (Params.dossier == null) {
                 connexion();
             }
-        }
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(Params.PREF_GEOLOC, b);
-        editor.apply();
-        if (b && PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PermissionChecker.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
-            );
         }
     }
 
@@ -211,8 +184,8 @@ public class MainActivity extends LoadingActivity implements  CompoundButton.OnC
                     Double  lat = client.getLatitude(),
                         lon = client.getLongitude();
                     String position = client.getCodePostal();
-                    if (!(lat == Double.POSITIVE_INFINITY
-                        || lon == Double.POSITIVE_INFINITY)) {
+                    if (!(lat == null
+                        || lon == null)) {
                         position = lat+","+lon;
                     }
                     String uri = "google.navigation:"+"q="+position;
@@ -228,26 +201,5 @@ public class MainActivity extends LoadingActivity implements  CompoundButton.OnC
                 break;
         }
     }
-
-    private void connexion() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-    }
-
-    public void deconnexion(View view) {
-        Params.connectedUser = null;
-        Params.dossier = null;
-        preferences.edit()
-            .putString(Params.PREF_USER, null)
-            .putString(Params.PREF_DOSSIER, null)
-            .apply();
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-    }
-
-    public void synchroniser(View view) {
-        new SynchronisationBD(this).execute();
-    }
-
 
 }

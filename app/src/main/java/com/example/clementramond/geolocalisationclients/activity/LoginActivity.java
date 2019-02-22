@@ -3,23 +3,11 @@ package com.example.clementramond.geolocalisationclients.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -27,31 +15,26 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
-import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
 import com.example.clementramond.geolocalisationclients.modele.Droit;
 import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 
-import static android.Manifest.permission.READ_CONTACTS;
+import java.util.ArrayList;
 
 /**
  * A login screen that offers login via pseudo/password.
  */
-public class LoginActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class LoginActivity extends OptionsActivity implements AdapterView.OnItemSelectedListener {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -67,7 +50,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private Spinner mDossierView;
+    private Spinner mDossierSpinner;
 
     private ArrayAdapter<Dossier> mDossierAdapter;
 
@@ -75,11 +58,16 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
     private ArrayList<Dossier> dossiers;
     private Dossier dossier = null;
+    private boolean selectionDossier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        super.setActivity(R.id.login_form);
+        super.setLoading(R.id.loading);
+
         // Set up the login form.
         mPseudoView = (EditText) findViewById(R.id.pseudo);
 
@@ -103,12 +91,12 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
             }
         });
 
-        mDossierView = findViewById(R.id.dossier);
+        mDossierSpinner = findViewById(R.id.dossier);
         dossiers = new DossierDAO(this).getAll();
         mDossierAdapter = new ArrayAdapter<>(this, R.layout.custom_dropdown_item, dossiers);
 
-        mDossierView.setAdapter(mDossierAdapter);
-        mDossierView.setOnItemSelectedListener(this);
+        mDossierSpinner.setAdapter(mDossierAdapter);
+        mDossierSpinner.setOnItemSelectedListener(this);
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -195,7 +183,9 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     }
 
     private void selectDossier(boolean b) {
-        mDossierView.setVisibility(b?View.VISIBLE:View.GONE);
+        selectionDossier = b;
+        dossier = b?(Dossier) mDossierSpinner.getSelectedItem():null;
+        mDossierSpinner.setVisibility(b?View.VISIBLE:View.GONE);
         mPseudoView.setEnabled(!b);
         mPasswordView.setEnabled(!b);
     }
@@ -208,6 +198,11 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
+    }
+
+    private void accueil() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -239,7 +234,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
             try {
                 utilisateurs = utilisateurDAO.getAll();
                 // Simulate network access.
-                Thread.sleep(2000);
+                //Thread.sleep(2000);
             } catch (Exception e) {
                 return DB_ERROR;
             }
@@ -264,14 +259,21 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
             if (success == CONNEXION_OK) {
                 Params.connectedUser = utilisateur;
-                SharedPreferences prefs = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
+                SharedPreferences.Editor editor = preferences.edit();
                 editor.putString(Params.PREF_USER, utilisateur.getPseudo());
-                editor.apply();
-                if (utilisateur.getDroit().getDroit().equals(Droit.DROITS[2]) && dossier==null) {
-                    selectDossier(true);
+                if (utilisateur.getDroit().getDroit().equals(Droit.DROITS[2])) {
+                    if (!selectionDossier) {
+                        selectDossier(true);
+                        editor.apply();
+                        editor = null;
+                    }
                 } else {
-                    finish();
+                    dossier = utilisateur.getDossier();
+                }
+                if (editor != null) {
+                    Params.dossier = dossier;
+                    editor.putString(Params.PREF_DOSSIER, String.valueOf(dossier.getId())).apply();
+                    accueil();
                 }
             } else if (success == INVALID_PSEUDO) {
                 mPseudoView.setError(getString(R.string.error_incorrect_pseudo));

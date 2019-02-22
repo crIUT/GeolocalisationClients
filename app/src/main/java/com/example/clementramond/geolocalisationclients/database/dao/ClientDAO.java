@@ -75,12 +75,12 @@ public class ClientDAO extends GeolocClientsDBDAO {
                 client.setSousCategorie(sousCategorie);
 
                 client.setNom(c.getString(DBHelper.CLIENT_NOM));
-                client.setPrenom(c.getString(DBHelper.CLIENT_PRENOM));
+                client.setPrenom(c.isNull(DBHelper.CLIENT_PRENOM)?null:c.getString(DBHelper.CLIENT_PRENOM));
                 client.setCodePostal(c.getString(DBHelper.CLIENT_CP));
-                client.setTelephoneFixe(c.getString(DBHelper.CLIENT_TEL_FIXE));
-                client.setTelephonePortable(c.getString(DBHelper.CLIENT_TEL_PORTABLE));
-                client.setLatitude(c.getDouble(DBHelper.CLIENT_LATITUDE));
-                client.setLongitude(c.getDouble(DBHelper.CLIENT_LONGITUDE));
+                client.setTelephoneFixe(c.isNull(DBHelper.CLIENT_TEL_FIXE)?null:c.getString(DBHelper.CLIENT_TEL_FIXE));
+                client.setTelephonePortable(c.isNull(DBHelper.CLIENT_TEL_PORTABLE)?null:c.getString(DBHelper.CLIENT_TEL_PORTABLE));
+                client.setLatitude(c.isNull(DBHelper.CLIENT_LATITUDE)?null:c.getDouble(DBHelper.CLIENT_LATITUDE));
+                client.setLongitude(c.isNull(DBHelper.CLIENT_LONGITUDE)?null:c.getDouble(DBHelper.CLIENT_LONGITUDE));
 
                 clients.add(client);
             }

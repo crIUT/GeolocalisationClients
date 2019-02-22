@@ -12,7 +12,16 @@
     <string name="error_field_required">Ce champ est requis</string>
     <string name="error_cannot_access_db">Echec d\'accès à la base de données</string>
 
+    <!-- Strings related to settings -->
+    <string name="prompt_serveur">Changer l\'adresse du serveur</string>
+
     <string name="synchronizing_db">Synchronisation de la base de données en cours</string>
 
     <string name="menuParams">Paramètres</string>
+    <string name="menuSync">Synchronisation</string>
+    <string name="menuDeco">Déconnexion</string>
+    <string name="ok">OK</string>
+    <string name="geoloc">Géolocalisation</string>
+    <string name="finished">Terminé</string>
+    <string name="settings">Paramètres</string>
 </resources>

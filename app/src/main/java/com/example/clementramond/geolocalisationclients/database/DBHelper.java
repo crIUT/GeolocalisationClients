@@ -269,7 +269,7 @@ public class DBHelper extends SQLiteOpenHelper {
             new Client(1, sousCategories[0], "ROUS", null, "12000",
                 null, null, 44.360111, 2.5768032),
             new Client(2, sousCategories[3], "RAMOND", null, "81430",
-                null, null, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+                null, null, null, null)
         };
         for (Client client : clients) {
             db.insert(TABLE_CLIENT, null, ClientDAO.toContentValues(client));
@@ -332,10 +332,25 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public static String getSelectFromUtilisateur() {
-        String requete = getSelectFrom(new String[]{TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
-            UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
-        requete += " where (" + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
-        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT]+")";
+        String[][] columns = new String[][] {
+            UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS
+        };
+        int nbTable = columns.length;
+        int taille;
+        String requete = "select ";
+        for (int i=0 ; i < nbTable ; i++) {
+            taille = columns[i].length;
+            for (int j=0 ; j < taille ; j++) {
+                requete += columns[i][j]+(i == nbTable-1 && j == taille-1 ? "" : ", ");
+            }
+        }
+        requete += " from " + TABLE_UTILISATEUR;
+        requete += " left outer join " + TABLE_DOSSIER
+            + " on " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER]
+            + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
+        requete += " join " + TABLE_DROIT
+            + " on " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT]
+            + " = " + DROIT_COLUMNS[DROIT_DROIT];
 
         return requete;
     }

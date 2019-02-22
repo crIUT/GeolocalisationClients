@@ -74,13 +74,17 @@ public class UtilisateurDAO extends GeolocClientsDBDAO {
             while (c.moveToNext()) {
                 utilisateur = new Utilisateur();
                 utilisateur.setPseudo(c.getString(DBHelper.UTILISATEUR_PSEUDO));
-                utilisateur.setNom(c.getString(DBHelper.UTILISATEUR_NOM));
-                utilisateur.setPrenom(c.getString(DBHelper.UTILISATEUR_PRENOM));
+                utilisateur.setNom(c.isNull(DBHelper.UTILISATEUR_NOM)?null:c.getString(DBHelper.UTILISATEUR_NOM));
+                utilisateur.setPrenom(c.isNull(DBHelper.UTILISATEUR_PRENOM)?null:c.getString(DBHelper.UTILISATEUR_PRENOM));
                 utilisateur.setMdp(c.getString(DBHelper.UTILISATEUR_MDP));
 
-                dossier = new Dossier();
-                dossier.setId(c.getInt(DBHelper.UTILISATEUR_COLUMNS.length+DBHelper.DOSSIER_ID));
-                dossier.setNom(c.getString(DBHelper.UTILISATEUR_COLUMNS.length+DBHelper.DOSSIER_NOM));
+                if (c.isNull(DBHelper.UTILISATEUR_COLUMNS.length+DBHelper.DOSSIER_ID)) {
+                    dossier = null;
+                } else {
+                    dossier = new Dossier();
+                    dossier.setId(c.getInt(DBHelper.UTILISATEUR_COLUMNS.length+DBHelper.DOSSIER_ID));
+                    dossier.setNom(c.getString(DBHelper.UTILISATEUR_COLUMNS.length+DBHelper.DOSSIER_NOM));
+                }
                 utilisateur.setDossier(dossier);
 
                 utilisateur.setDroit(new Droit(c.getString(DBHelper.UTILISATEUR_DROIT)));
