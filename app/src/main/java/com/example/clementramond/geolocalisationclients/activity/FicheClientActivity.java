@@ -130,8 +130,7 @@ public class FicheClientActivity extends OptionsActivity {
             client.setLatitude(lastKnownLocation.getLatitude());
             client.setLongitude(lastKnownLocation.getLongitude());
             clientDAO.update(client);
-            mLatitudeView.setText(client.getLatitude() == null ? "inconnue" : client.getLatitude() + "");
-            mLongitudeView.setText(client.getLongitude() == null ? "inconnue" : client.getLongitude() + "");
+            Toast.makeText(this, "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Votre position n'a pas pu être récupérée.", Toast.LENGTH_SHORT).show();
         }

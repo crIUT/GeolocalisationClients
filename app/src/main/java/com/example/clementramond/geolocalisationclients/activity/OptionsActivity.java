@@ -72,7 +72,7 @@ public abstract class OptionsActivity extends LoadingActivity {
                     new String[]{Manifest.permission.INTERNET}, Params.REQ_ACCESS
             );
         } else {
-            new SynchronisationBD(this).execute("http://www.ferrictorus.com/mlpapi1/cards?query=set:%22DE%22");
+            new SynchronisationBD(this).execute();
         }
     }
 
