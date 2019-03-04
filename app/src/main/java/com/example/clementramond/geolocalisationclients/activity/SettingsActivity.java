@@ -17,7 +17,6 @@ import android.widget.Switch;
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
-import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
 import com.example.clementramond.geolocalisationclients.modele.Droit;
 
@@ -83,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         if (b && PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PermissionChecker.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS
             );
         }
     }

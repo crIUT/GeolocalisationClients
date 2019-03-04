@@ -8,4 +8,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="FicheClient">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="FicheClientNomChamp" parent="FicheClient">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="FicheClientSousChamp" parent="FicheClient">
+        <item name="android:textStyle">italic</item>
+    </style>
+
 </resources>

@@ -3,7 +3,6 @@ package com.example.clementramond.geolocalisationclients.activity;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -11,11 +10,9 @@ import android.support.v4.content.PermissionChecker;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
@@ -83,7 +80,7 @@ public class MainActivity extends OptionsActivity implements  AdapterView.OnItem
         int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (permission != PermissionChecker.PERMISSION_GRANTED && preferences.getBoolean(Params.PREF_GEOLOC, true)) {
             ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS_LOCATION
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS
             );
         }
 

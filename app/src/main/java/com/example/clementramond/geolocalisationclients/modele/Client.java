@@ -1,6 +1,9 @@
 package com.example.clementramond.geolocalisationclients.modele;
 
-public class Client {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Client implements Parcelable {
 
     private int id;
 
@@ -37,6 +40,66 @@ public class Client {
         this.latitude = latitude;
         this.longitude = longitude;
     }
+
+    protected Client(Parcel in) {
+        id = in.readInt();
+        sousCategorie = in.readParcelable(SousCategorie.class.getClassLoader());
+        nom = in.readString();
+        prenom = in.readString();
+        codePostal = in.readString();
+        telephoneFixe = in.readString();
+        telephonePortable = in.readString();
+        if (in.readByte() == 0) {
+            latitude = null;
+        } else {
+            latitude = in.readDouble();
+        }
+        if (in.readByte() == 0) {
+            longitude = null;
+        } else {
+            longitude = in.readDouble();
+        }
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeParcelable(sousCategorie, flags);
+        dest.writeString(nom);
+        dest.writeString(prenom);
+        dest.writeString(codePostal);
+        dest.writeString(telephoneFixe);
+        dest.writeString(telephonePortable);
+        if (latitude == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(latitude);
+        }
+        if (longitude == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(longitude);
+        }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Client> CREATOR = new Creator<Client>() {
+        @Override
+        public Client createFromParcel(Parcel in) {
+            return new Client(in);
+        }
+
+        @Override
+        public Client[] newArray(int size) {
+            return new Client[size];
+        }
+    };
 
     public int getId() {
         return id;
@@ -112,6 +175,6 @@ public class Client {
 
     @Override
     public String toString() {
-        return id+"/"+sousCategorie+"/"+nom+"/"+codePostal;
+        return nom+(prenom!=null?" "+prenom:"");
     }
 }

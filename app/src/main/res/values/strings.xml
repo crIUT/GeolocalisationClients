@@ -24,4 +24,5 @@
     <string name="geoloc">Géolocalisation</string>
     <string name="finished">Terminé</string>
     <string name="settings">Paramètres</string>
+    <string name="fiche_client">Fiche Client</string>
 </resources>

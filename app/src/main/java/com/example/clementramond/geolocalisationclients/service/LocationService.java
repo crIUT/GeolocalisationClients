@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.database.dao.GeolocDAO;
+import com.example.clementramond.geolocalisationclients.modele.Droit;
 import com.example.clementramond.geolocalisationclients.modele.Geolocalisation;
 import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 
@@ -123,7 +124,8 @@ public class LocationService extends IntentService {
         permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (locationManager != null && permission == PermissionChecker.PERMISSION_GRANTED) {
             lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if (lastKnownLocation != null && Params.connectedUser != null) {
+            if (lastKnownLocation != null && Params.connectedUser != null
+                    && !Params.connectedUser.getDroit().getDroit().equals(Droit.DROITS[2])) {
                 Geolocalisation geoloc = new Geolocalisation();
                 geoloc.setDateTime(LocalDateTime.now());
                 geoloc.setUtilisateur(Params.connectedUser);

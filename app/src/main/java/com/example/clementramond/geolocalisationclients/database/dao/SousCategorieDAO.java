@@ -48,13 +48,25 @@ public class SousCategorieDAO extends GeolocClientsDBDAO {
 
     private Cursor getCursorAll() {
         String requete = DBHelper.getSelectFromSousCategorie()
-            + " order by " + DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_CATEGORIE];
+                + " order by " + DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_CATEGORIE];
 
         return database.rawQuery(requete, null);
     }
 
+    private Cursor getCursorFromCategorie(Categorie categorie) {
+        String requete = DBHelper.getSelectFromSousCategorie()
+                + " and " + DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_CATEGORIE] + " = ?"
+                + " order by " + DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_NOM];
+
+        return database.rawQuery(requete, new String[]{categorie.getNom()});
+    }
+
     public ArrayList<SousCategorie> getAll() {
         return cursorToListe(getCursorAll());
+    }
+
+    public ArrayList<SousCategorie> getFromCategorie(Categorie categorie) {
+        return cursorToListe(getCursorFromCategorie(categorie));
     }
 
     private SousCategorie fromCursor(Cursor c) {
@@ -93,5 +105,4 @@ public class SousCategorieDAO extends GeolocClientsDBDAO {
 
         return values;
     }
-
 }

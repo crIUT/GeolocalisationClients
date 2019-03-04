@@ -1,6 +1,9 @@
 package com.example.clementramond.geolocalisationclients.modele;
 
-public class SousCategorie {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class SousCategorie implements Parcelable {
 
     private Categorie categorie;
 
@@ -14,6 +17,39 @@ public class SousCategorie {
         this.categorie = categorie;
         this.nom = nom;
     }
+
+    public SousCategorie(String nom) {
+        this.categorie = null;
+        this.nom = nom;
+    }
+
+    protected SousCategorie(Parcel in) {
+        categorie = in.readParcelable(Categorie.class.getClassLoader());
+        nom = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(categorie, flags);
+        dest.writeString(nom);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<SousCategorie> CREATOR = new Creator<SousCategorie>() {
+        @Override
+        public SousCategorie createFromParcel(Parcel in) {
+            return new SousCategorie(in);
+        }
+
+        @Override
+        public SousCategorie[] newArray(int size) {
+            return new SousCategorie[size];
+        }
+    };
 
     public Categorie getCategorie() {
         return categorie;
@@ -33,6 +69,6 @@ public class SousCategorie {
 
     @Override
     public String toString() {
-        return categorie + " - " + nom;
+        return nom;
     }
 }

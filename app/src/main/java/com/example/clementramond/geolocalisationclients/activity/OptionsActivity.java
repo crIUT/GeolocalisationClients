@@ -1,18 +1,20 @@
 package com.example.clementramond.geolocalisationclients.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
-import com.example.clementramond.geolocalisationclients.activity.asynctask.SynchronisationBD;
+import com.example.clementramond.geolocalisationclients.asynctask.SynchronisationBD;
 
 public abstract class OptionsActivity extends LoadingActivity {
 
@@ -64,7 +66,14 @@ public abstract class OptionsActivity extends LoadingActivity {
     }
 
     public void synchroniser() {
-        new SynchronisationBD(this).execute();
+        int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (permission != PermissionChecker.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.INTERNET}, Params.REQ_ACCESS
+            );
+        } else {
+            new SynchronisationBD(this).execute("http://www.ferrictorus.com/mlpapi1/cards?query=set:%22DE%22");
+        }
     }
 
 }
