@@ -201,7 +201,7 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
     }
 
     private void accueil() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, ListeClientActivity.class);
         startActivity(intent);
     }
 

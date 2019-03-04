@@ -97,4 +97,8 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
     public void onNothingSelected(AdapterView<?> adapterView) {
 
     }
+
+    public void termine(View view) {
+        finish();
+    }
 }

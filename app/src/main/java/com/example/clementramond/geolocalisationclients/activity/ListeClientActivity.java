@@ -1,7 +1,11 @@
 package com.example.clementramond.geolocalisationclients.activity;
 
+import android.Manifest;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -15,10 +19,14 @@ import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
 import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.SousCategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.modele.Categorie;
 import com.example.clementramond.geolocalisationclients.modele.Client;
+import com.example.clementramond.geolocalisationclients.modele.Dossier;
 import com.example.clementramond.geolocalisationclients.modele.SousCategorie;
+import com.example.clementramond.geolocalisationclients.service.LocationService;
 
 import java.util.ArrayList;
 
@@ -42,6 +50,9 @@ public class ListeClientActivity extends OptionsActivity implements AdapterView.
     private ArrayList<SousCategorie> listSousCategories;
     private ArrayList<Client> listClients;
 
+    private ComponentName locationServiceComponentName;
+    private ComponentName serviceComponentName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +60,20 @@ public class ListeClientActivity extends OptionsActivity implements AdapterView.
 
         super.setActivity(R.id.activity);
         super.setLoading(R.id.loading);
+
+        locationServiceComponentName = new ComponentName(this, LocationService.class);
+
+        int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission != PermissionChecker.PERMISSION_GRANTED && preferences.getBoolean(Params.PREF_GEOLOC, true)) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Params.REQ_ACCESS
+            );
+        }
+
+        if (serviceComponentName == null || locationServiceComponentName != null
+                && !(locationServiceComponentName.getClassName().equals(serviceComponentName.getClassName()))) {
+            serviceComponentName = startService(new Intent(this, LocationService.class));
+        }
 
         listCategories = new ArrayList<>();
         listSousCategories = new ArrayList<>();
@@ -140,6 +165,33 @@ public class ListeClientActivity extends OptionsActivity implements AdapterView.
             }
         });
 
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        if (Params.connectedUser == null) {
+            String pseudo = preferences.getString(Params.PREF_USER, null);
+            Params.connectedUser =
+                    (pseudo==null) ? null : new UtilisateurDAO(this).getFromPseudo(pseudo);
+            if (Params.connectedUser == null) {
+                connexion();
+                return;
+            }
+        }
+
+        Dossier dossierUser = Params.connectedUser.getDossier();
+        if (Params.dossier == null && dossierUser != null) {
+            Params.dossier = dossierUser;
+        } else {
+            String idDossier = preferences.getString(Params.PREF_DOSSIER, null);
+            Params.dossier =
+                    (idDossier==null) ? null : new DossierDAO(this).getFromId(idDossier);
+            if (Params.dossier == null) {
+                connexion();
+            }
+        }
     }
 
     private void setCategories(ArrayList<Categorie> newList) {
