@@ -1,6 +1,7 @@
 package com.example.clementramond.geolocalisationclients.activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,8 +20,10 @@ import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
+import com.example.clementramond.geolocalisationclients.asynctask.SynchronisationBD;
 import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
 import com.example.clementramond.geolocalisationclients.modele.Client;
+import com.example.clementramond.geolocalisationclients.modele.Geolocalisation;
 
 public class FicheClientActivity extends OptionsActivity {
 
@@ -91,6 +94,11 @@ public class FicheClientActivity extends OptionsActivity {
         mLongitudeView.setText(client.getLongitude() == null ? "inconnue" : client.getLongitude() + "");
     }
 
+    @Override
+    public void refreshData() {
+        clientDAO = new ClientDAO(this);
+    }
+
     public void onClickItineraire(View view) {
         // Appel de GoogleMap
         Double lat = client.getLatitude(),
@@ -129,8 +137,21 @@ public class FicheClientActivity extends OptionsActivity {
         if (lastKnownLocation != null) {
             client.setLatitude(lastKnownLocation.getLatitude());
             client.setLongitude(lastKnownLocation.getLongitude());
-            clientDAO.update(client);
-            Toast.makeText(this, "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT).show();
+            final Toast TOAST_OK = Toast.makeText(getApplicationContext(), "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    SynchronisationBD.sendRequest(
+                            preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)
+                                    + "/apiBD.php?type=UPDATE"
+                                    + "&dossier="+Params.encode(String.valueOf(Params.dossier.getId()))
+                                    + "&idClient="+Params.encode(String.valueOf(client.getId()))
+                                    + "&lat="+Params.encode(String.valueOf(client.getLatitude()))
+                                    + "&lon="+Params.encode(String.valueOf(client.getLongitude())));
+                    setResult(Activity.RESULT_OK);
+                    TOAST_OK.show();
+                }
+            }).start();
         } else {
             Toast.makeText(this, "Votre position n'a pas pu être récupérée.", Toast.LENGTH_SHORT).show();
         }

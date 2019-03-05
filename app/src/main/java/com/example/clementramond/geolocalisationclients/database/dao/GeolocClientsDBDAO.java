@@ -29,4 +29,14 @@ public class GeolocClientsDBDAO {
         dbHelper.close();
         database = null;
     }
+
+    public void deleteTablesContent() {
+        database.delete(DBHelper.TABLE_GEOLOC, null, null);
+        database.delete(DBHelper.TABLE_CLIENT, null, null);
+        database.delete(DBHelper.TABLE_SOUS_CATEGORIE, null, null);
+        database.delete(DBHelper.TABLE_CATEGORIE, null, null);
+        database.delete(DBHelper.TABLE_UTILISATEUR, null, null);
+        database.delete(DBHelper.TABLE_DROIT, null, null);
+        database.delete(DBHelper.TABLE_DOSSIER, null, null);
+    }
 }

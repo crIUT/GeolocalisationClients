@@ -11,8 +11,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
@@ -28,6 +30,8 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
 
     private Switch mGeolocSwitch;
     private Spinner mDossierSpinner;
+    private TextView mServerAdresseView;
+    private EditText mNewServerAdresseView;
 
     private ArrayAdapter<Dossier> mDossierAdapter;
 
@@ -39,6 +43,11 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         setContentView(R.layout.activity_settings);
 
         preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
+
+        mServerAdresseView = findViewById(R.id.server_adress);
+        mServerAdresseView.setText(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER));
+
+        mNewServerAdresseView  = findViewById(R.id.new_serveur_adress);
 
         mGeolocSwitch = findViewById(R.id.geolocSwitch);
         mGeolocSwitch.setChecked(preferences.getBoolean(Params.PREF_GEOLOC, true));
@@ -89,7 +98,11 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        Params.dossier = dossiers.get(i);
+        Dossier dossier = dossiers.get(i);
+        if (dossier.getId() != Params.dossier.getId()) {
+            setResult(Params.RESULT_SYNC);
+        }
+        Params.dossier = dossier;
         preferences.edit().putString(Params.PREF_DOSSIER, String.valueOf(Params.dossier.getId())).apply();
     }
 
@@ -100,5 +113,11 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
 
     public void termine(View view) {
         finish();
+    }
+
+    public void setServerAdress(View view) {
+        preferences.edit().putString(Params.PREF_SERVER, mNewServerAdresseView.getText().toString()).commit();
+        mServerAdresseView.setText(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER));
+        setResult(Params.RESULT_SYNC);
     }
 }

@@ -33,6 +33,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_SOUS_CATEGORIE = "sous_categorie";
     public static final String TABLE_CLIENT = "client";
     public static final String TABLE_GEOLOC = "geoloc";
+    public static final String TABLE_GEOLOC_TO_ADD = "geoloc_to_add";
 
     public static final String[] DOSSIER_COLUMNS = new String[]{
         "d_id",
@@ -97,15 +98,26 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final int CLIENT_LONGITUDE = 9;
 
     public static final String[] GEOLOC_COLUMNS = new String[]{
-        "dateTime",
-        "g_utilisateur",
-        "g_latitude",
-        "g_longitude"
+            "dateTime",
+            "g_utilisateur",
+            "g_latitude",
+            "g_longitude"
     };
     public static final int GEOLOC_DATETIME = 0;
     public static final int GEOLOC_UTILISATEUR = 1;
     public static final int GEOLOC_LATITUDE = 2;
     public static final int GEOLOC_LONGITUDE = 3;
+
+    public static final String[] GEOLOC_TO_ADD_COLUMNS = new String[]{
+            "ta_dateTime",
+            "ta_g_utilisateur",
+            "ta_g_latitude",
+            "ta_g_longitude"
+    };
+    public static final int GEOLOC_TO_ADD_DATETIME = 0;
+    public static final int GEOLOC_TO_ADD_UTILISATEUR = 1;
+    public static final int GEOLOC_TO_ADD_LATITUDE = 2;
+    public static final int GEOLOC_TO_ADD_LONGITUDE = 3;
 
     private static final String CREATION_TABLE_DOSSIER =
         "CREATE TABLE " + TABLE_DOSSIER + " ( "
@@ -169,6 +181,15 @@ public class DBHelper extends SQLiteOpenHelper {
             + " PRIMARY KEY ("+ GEOLOC_COLUMNS[GEOLOC_DATETIME] +", "+GEOLOC_COLUMNS[GEOLOC_UTILISATEUR]+")"
             +");";
 
+    private static final String CREATION_TABLE_GEOLOC_TO_ADD =
+            "CREATE TABLE " + TABLE_GEOLOC_TO_ADD + " ( "
+                    + GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_DATETIME] + " TEXT, "
+                    + GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_UTILISATEUR] + " TEXT, "
+                    + GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_LATITUDE] + " REAL, "
+                    + GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_LONGITUDE] + " REAL, "
+                    + " PRIMARY KEY ("+ GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_DATETIME] +", "+GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_UTILISATEUR]+")"
+                    +");";
+
     private static final String SUPPRIMER_TABLE =
             "DROP TABLE IF EXISTS %s ;";
     
@@ -203,81 +224,12 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATION_TABLE_SOUS_CATEGORIE);
         db.execSQL(CREATION_TABLE_CLIENT);
         db.execSQL(CREATION_TABLE_GEOLOC);
-
-        Dossier[] dossiers = new Dossier[]{
-            new Dossier(1, "Dossier 1"),
-            new Dossier(2, "Dossier 2"),
-            new Dossier(3, "Dossier 3"),
-            new Dossier(4, "Dossier 4"),
-            new Dossier(5, "Dossier 5")
-        };
-        for (Dossier dossier : dossiers) {
-            db.insert(TABLE_DOSSIER, null, DossierDAO.toContentValues(dossier));
-        }
-
-        Droit[] droits = new Droit[]{
-            new Droit("user"),
-            new Droit("admin"),
-            new Droit("super-admin")
-        };
-        for (Droit droit : droits) {
-            db.insert(TABLE_DROIT, null, DroitDAO.toContentValues(droit));
-        }
-
-        ArrayList<Utilisateur> utilisateurs = new ArrayList<>();
-        Utilisateur utilisateur;
-        Dossier dossier;
-        utilisateur = new Utilisateur("1_clement_ramond", "", "", "azer",
-            null,
-            new Droit(Droit.DROITS[2])
-        );
-        utilisateurs.add(utilisateur);
-
-        utilisateur = new Utilisateur("2_clement_ramond", "", "", "",
-            null,
-            new Droit("user")
-        );
-        dossier = new Dossier();
-        dossier.setId(2);
-        utilisateur.setDossier(dossier);
-        utilisateurs.add(utilisateur);
-        for (Utilisateur utili : utilisateurs) {
-            db.insert(TABLE_UTILISATEUR, null, UtilisateurDAO.toContentValues(utili));
-        }
-
-        Categorie[] categories = new Categorie[]{
-            new Categorie("DUT GEA"),
-            new Categorie("DUT Informatique"),
-            new Categorie("LPMMS")
-        };
-        for (Categorie categorie : categories) {
-            db.insert(TABLE_CATEGORIE, null, CategorieDAO.toContentValues(categorie));
-        }
-
-        SousCategorie[] sousCategories = new SousCategorie[]{
-            new SousCategorie( categories[0], "1ère année"),
-            new SousCategorie( categories[1], "1ère année"),
-            new SousCategorie( categories[2], "1ère année"),
-            new SousCategorie( categories[0], "2ème année"),
-            new SousCategorie( categories[1], "2ème année")
-        };
-        for (SousCategorie sousCategorie : sousCategories) {
-            db.insert(TABLE_SOUS_CATEGORIE, null, SousCategorieDAO.toContentValues(sousCategorie));
-        }
-
-        Client[] clients = new Client[]{
-            new Client(1, sousCategories[0], "ROUS", null, "12000",
-                null, null, 44.360111, 2.5768032),
-            new Client(2, sousCategories[3], "RAMOND", null, "81430",
-                null, null, null, null)
-        };
-        for (Client client : clients) {
-            db.insert(TABLE_CLIENT, null, ClientDAO.toContentValues(client));
-        }
+        db.execSQL(CREATION_TABLE_GEOLOC_TO_ADD);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int ancienneVersion, int nouvelleVersion) {
+        db.execSQL(String.format(SUPPRIMER_TABLE, TABLE_GEOLOC_TO_ADD));
         db.execSQL(String.format(SUPPRIMER_TABLE, TABLE_GEOLOC));
         db.execSQL(String.format(SUPPRIMER_TABLE, TABLE_CLIENT));
         db.execSQL(String.format(SUPPRIMER_TABLE, TABLE_SOUS_CATEGORIE));
@@ -381,9 +333,20 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static String getSelectFromGeoloc() {
         String requete = getSelectFrom(new String[]{TABLE_GEOLOC, TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
-            GEOLOC_COLUMNS, UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
+                GEOLOC_COLUMNS, UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
         requete += " where (" + GEOLOC_COLUMNS[GEOLOC_UTILISATEUR]
-            + " = " + UTILISATEUR_COLUMNS[UTILISATEUR_PSEUDO];
+                + " = " + UTILISATEUR_COLUMNS[UTILISATEUR_PSEUDO];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
+        requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT]+")";
+
+        return requete;
+    }
+
+    public static String getSelectFromGeolocToAdd() {
+        String requete = getSelectFrom(new String[]{TABLE_GEOLOC_TO_ADD, TABLE_UTILISATEUR, TABLE_DOSSIER, TABLE_DROIT},
+                GEOLOC_TO_ADD_COLUMNS, UTILISATEUR_COLUMNS, DOSSIER_COLUMNS, DROIT_COLUMNS);
+        requete += " where (" + GEOLOC_TO_ADD_COLUMNS[GEOLOC_TO_ADD_UTILISATEUR]
+                + " = " + UTILISATEUR_COLUMNS[UTILISATEUR_PSEUDO];
         requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_ID_DOSSIER] + " = " + DOSSIER_COLUMNS[DOSSIER_ID];
         requete += " and " + UTILISATEUR_COLUMNS[UTILISATEUR_DROIT] + " = " + DROIT_COLUMNS[DROIT_DROIT]+")";
 

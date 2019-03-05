@@ -1,10 +1,21 @@
 package com.example.clementramond.geolocalisationclients.asynctask;
 
+import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
-import com.example.clementramond.geolocalisationclients.activity.LoadingActivity;
+import com.example.clementramond.geolocalisationclients.activity.OptionsActivity;
+import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.ClientDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.DroitDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.GeolocClientsDBDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.GeolocDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.SousCategorieDAO;
+import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.modele.Categorie;
 import com.example.clementramond.geolocalisationclients.modele.Client;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
@@ -13,12 +24,16 @@ import com.example.clementramond.geolocalisationclients.modele.Geolocalisation;
 import com.example.clementramond.geolocalisationclients.modele.SousCategorie;
 import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 
+import org.threeten.bp.LocalDateTime;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,17 +44,19 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
 
     private static final String TAG_LOG = "ACCES WEB";
 
-    private LoadingActivity activiteParente;
+    private OptionsActivity activiteParente;
 
-    ArrayList<Dossier> dossiers;
-    ArrayList<Droit> droits;
-    ArrayList<Utilisateur> utilisateurs;
-    ArrayList<Categorie> categories;
-    HashMap<Integer, SousCategorie> sousCategories;
-    ArrayList<Client> clients;
-    ArrayList<Geolocalisation> geolocs;
+    private SharedPreferences preferences;
 
-    public SynchronisationBD(LoadingActivity parent) {
+    private ArrayList<Dossier> dossiers;
+    private ArrayList<Droit> droits;
+    private ArrayList<Utilisateur> utilisateurs;
+    private ArrayList<Categorie> categories;
+    private HashMap<Integer, SousCategorie> sousCategories;
+    private ArrayList<Client> clients;
+    private ArrayList<Geolocalisation> geolocs;
+
+    public SynchronisationBD(OptionsActivity parent) {
         activiteParente = parent;
     }
 
@@ -47,37 +64,88 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     protected void onPreExecute() {
         super.onPreExecute();
         activiteParente.loading(true);
+        preferences = activiteParente.preferences;
     }
 
     @Override
     protected Boolean doInBackground(String... args) {
 
-        String resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=dossier");
+        String resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=dossier");
+        if (resultat.isEmpty()) return false;
         dossiers = csvToListeDossier(responseToCsv(resultat.toString()));
 
-        Params.dossier = dossiers.get(0); // TODO retirer ce bouchon
-
-        resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=droit");
+        resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=droit");
+        if (resultat.isEmpty()) return false;
         droits = csvToListeDroit(responseToCsv(resultat.toString()));
 
-        resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=utilisateur");
+        resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=utilisateur");
+        if (resultat.isEmpty()) return false;
         utilisateurs = csvToListeUtilisateur(responseToCsv(resultat.toString()));
 
         if (Params.dossier != null) {
             String prefix = String.format("%03d", Params.dossier.getId()) + "_";
 
-            resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=" + prefix + "categorie");
+            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "categorie");
+            if (resultat.isEmpty()) return false;
             categories = csvToListeCategorie(responseToCsv(resultat.toString()));
 
-            resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=" + prefix + "sous_categorie");
+            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "sous_categorie");
+            if (resultat.isEmpty()) return false;
             sousCategories = csvToListeSousCategorie(responseToCsv(resultat.toString()));
 
-            resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=" + prefix + "client");
+            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "client");
+            if (resultat.isEmpty()) return false;
             clients = csvToListeClient(responseToCsv(resultat.toString()));
-            /*
-            resultat = sendRequest("http://www.mmsplanning.com/apiBD.php?type=SELECT&nomTable=" + prefix + "geoloc");
+
+            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "geoloc");
+            if (resultat.isEmpty()) return false;
             geolocs = csvToListeGeoloc(responseToCsv(resultat.toString()));
-            */
+        }
+
+        new GeolocClientsDBDAO(activiteParente).deleteTablesContent();
+
+        DossierDAO dossierDAO = new DossierDAO(activiteParente);
+        for (Dossier dossier : dossiers) {
+            dossierDAO.save(dossier);
+        }
+
+        DroitDAO droitDAO = new DroitDAO(activiteParente);
+        for (Droit droit : droits) {
+            droitDAO.save(droit);
+        }
+
+        UtilisateurDAO utilisateurDAO = new UtilisateurDAO(activiteParente);
+        for (Utilisateur utilisateur : utilisateurs) {
+            utilisateurDAO.save(utilisateur);
+        }
+
+        if (categories != null) {
+            CategorieDAO categorieDAO = new CategorieDAO(activiteParente);
+            for (Categorie categorie : categories) {
+                categorieDAO.save(categorie);
+            }
+        }
+
+        if (sousCategories != null) {
+            SousCategorieDAO sousCategorieDAO = new SousCategorieDAO(activiteParente);
+            ArrayList<SousCategorie> list = hashMapToArrayListSousCategorie(sousCategories);
+            for (SousCategorie sousCategorie : list) {
+                sousCategorieDAO.save(sousCategorie);
+            }
+        }
+
+        if (clients != null) {
+            ClientDAO clientDAO = new ClientDAO(activiteParente);
+            for (Client client : clients) {
+                clientDAO.save(client);
+            }
+        }
+
+        if (geolocs != null) {
+            GeolocDAO geolocDAO = new GeolocDAO(activiteParente);
+            for (Geolocalisation geoloc : geolocs) {
+                geolocDAO.save(geoloc);
+            }
         }
 
         return true;
@@ -87,10 +155,17 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     @Override
     protected void onPostExecute(Boolean resultat) {
         activiteParente.loading(false);
+        if (!resultat) {
+            Toast.makeText(activiteParente, "La synchronisation n'a pas pu être effectuée.\n"
+                                                + "Vérifiez votre connexion internet.",
+                    Toast.LENGTH_SHORT).show();
+        }
+        activiteParente.refreshData();
+
         super.onPostExecute(resultat);
     }
 
-    public String sendRequest(String requestURL) {
+    public static String sendRequest(String requestURL) {
         StringBuilder resultat = new StringBuilder();
 
         HttpURLConnection connexion = null;
@@ -138,7 +213,7 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         ArrayList<ArrayList<String>> lignesColonnes = new ArrayList<>();
 
         for (String ligne : lignes) {
-            colonnes = ligne.split(";");
+            colonnes = ligne.split(";", 10);
             nouvLigne = new ArrayList<>();
             for (String colonne : colonnes) {
                 nouvLigne.add(colonne);
@@ -148,8 +223,8 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         return lignesColonnes;
     }
 
-    private ArrayList<Object> hashMapToArrayList(HashMap<Object, Object> hashMap) {
-        ArrayList<Object> arrayList = new ArrayList<>();
+    private ArrayList<SousCategorie> hashMapToArrayListSousCategorie(HashMap<Integer, SousCategorie> hashMap) {
+        ArrayList<SousCategorie> arrayList = new ArrayList<>();
 
         Set cles = hashMap.keySet();
         Iterator it = cles.iterator();
@@ -282,5 +357,40 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         }
 
         return listeClient;
+    }
+
+    private ArrayList<Geolocalisation> csvToListeGeoloc(ArrayList<ArrayList<String>> arrayLists) {
+        ArrayList<Geolocalisation> listeGeolocalisation = new ArrayList<>();
+        Geolocalisation geoloc;
+        String lat;
+        String lon;
+        for (ArrayList<String> colonnes : arrayLists) {
+            geoloc = new Geolocalisation();
+
+            geoloc.setDateTime(LocalDateTime.parse(colonnes.get(0), Geolocalisation.MYSQL_DTF));
+
+            for (Utilisateur utilisateur : utilisateurs) {
+                if (utilisateur.getPseudo().equals(colonnes.get(1))) {
+                    geoloc.setUtilisateur(utilisateur);
+                    break;
+                }
+            }
+
+            lat = colonnes.get(2);
+            if (lat.isEmpty()) {
+                geoloc.setLatitude(null);
+            } else {
+                geoloc.setLatitude(Double.parseDouble(lat));
+            }
+            lon = colonnes.get(3);
+            if (lon.isEmpty()) {
+                geoloc.setLongitude(null);
+            } else {
+                geoloc.setLongitude(Double.parseDouble(lon));
+            }
+
+            listeGeolocalisation.add(geoloc);
+        }
+        return listeGeolocalisation;
     }
 }

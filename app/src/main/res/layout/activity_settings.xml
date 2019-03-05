@@ -21,6 +21,7 @@
             android:id="@+id/server_adress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:inputType="textUri"
             android:text="adresseduserveur.fr"/>
 
     </LinearLayout>
@@ -51,7 +52,8 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/ok"/>
+            android:text="@string/ok"
+            android:onClick="setServerAdress"/>
 
     </LinearLayout>
 

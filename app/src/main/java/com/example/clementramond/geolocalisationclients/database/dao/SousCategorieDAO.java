@@ -101,7 +101,9 @@ public class SousCategorieDAO extends GeolocClientsDBDAO {
     public static ContentValues toContentValues(SousCategorie sousCategorie) {
         ContentValues values = new ContentValues();
         values.put(DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_NOM], sousCategorie.getNom());
-        values.put(DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_CATEGORIE], sousCategorie.getCategorie().getNom());
+        Categorie categorie = sousCategorie.getCategorie();
+        values.put(DBHelper.SOUS_CATEGORIE_COLUMNS[DBHelper.SOUS_CATEGORIE_CATEGORIE],
+                categorie != null ? categorie.getNom() : null);
 
         return values;
     }

@@ -46,6 +46,13 @@ public class ClientDAO extends GeolocClientsDBDAO {
         return database.rawQuery(requete, null);
     }
 
+    private Cursor getCursorFromId(int id) {
+        String requete = DBHelper.getSelectFromClient()
+                + " and " + WHERE_ID_EQUALS;
+
+        return database.rawQuery(requete, new String[]{String.valueOf(id)});
+    }
+
     private Cursor getCursorFromCategorie(Categorie categorie) {
         String requete = DBHelper.getSelectFromClient()
                 + " and " + DBHelper.CLIENT_COLUMNS[DBHelper.CLIENT_CATEGORIE] + " = ?"
@@ -68,6 +75,10 @@ public class ClientDAO extends GeolocClientsDBDAO {
 
     public ArrayList<Client> getAll() {
         return cursorToListe(getCursorAll());
+    }
+
+    public Client getFromId(int id) {
+        return fromCursor(getCursorFromId(id));
     }
 
     public ArrayList<Client> getFromCategorie(Categorie categorie) {

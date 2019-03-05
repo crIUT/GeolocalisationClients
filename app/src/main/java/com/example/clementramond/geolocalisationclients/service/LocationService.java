@@ -14,12 +14,17 @@ import android.support.v4.content.PermissionChecker;
 import android.widget.Toast;
 
 import com.example.clementramond.geolocalisationclients.Params;
-import com.example.clementramond.geolocalisationclients.database.dao.GeolocDAO;
+import com.example.clementramond.geolocalisationclients.asynctask.SynchronisationBD;
+import com.example.clementramond.geolocalisationclients.database.dao.GeolocToAddDAO;
 import com.example.clementramond.geolocalisationclients.modele.Droit;
 import com.example.clementramond.geolocalisationclients.modele.Geolocalisation;
-import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 
 import org.threeten.bp.LocalDateTime;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class LocationService extends IntentService {
 
@@ -29,11 +34,12 @@ public class LocationService extends IntentService {
 
     private Location lastKnownLocation;
 
-    private boolean geoloc;
+    private boolean geolocState;
+    private boolean demarrage = true;
 
     private int permission;
 
-    private GeolocDAO geolocDAO;
+    private GeolocToAddDAO geolocToAddDAO;
 
     /**
      * A constructor is required, and must call the super <code><a href="/reference/android/app/IntentService.html#IntentService(java.lang.String)">IntentService(String)</a></code>
@@ -47,9 +53,9 @@ public class LocationService extends IntentService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
 
-        geolocDAO = new GeolocDAO(getApplicationContext());
+        geolocToAddDAO = new GeolocToAddDAO(getApplicationContext());
 
-        geoloc = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE).getBoolean(Params.PREF_GEOLOC, false);
+        geolocState = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE).getBoolean(Params.PREF_GEOLOC, false);
 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -68,7 +74,7 @@ public class LocationService extends IntentService {
             public void onProviderDisabled(String provider) {}
         };
 
-        if (geoloc) {
+        if (geolocState) {
             requestLocationUpdates();
         }
 
@@ -83,20 +89,45 @@ public class LocationService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         boolean glPref;
-        SharedPreferences preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
+        final SharedPreferences preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<Geolocalisation> geolocs;
+                while (true) {
+                    try {
+                        Thread.sleep(60000);
+                        geolocs = geolocToAddDAO.getAll();
+                        for (Geolocalisation geoloc : geolocs) {
+                            SynchronisationBD.sendRequest(
+                                preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)
+                                        + "/apiBD.php?type=INSERT"
+                                        + "&pseudoUtilisateur="+Params.encode(geoloc.getUtilisateur().getPseudo())
+                                        + "&date_heure="+Params.encode(geoloc.getDateTime().format(Geolocalisation.MYSQL_DTF))
+                                        + "&lat="+Params.encode(String.valueOf(geoloc.getLatitude()))
+                                        + "&lon="+Params.encode(String.valueOf(geoloc.getLongitude())));
+                            geolocToAddDAO.delete(geoloc);
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }).start();
         try {
             while (true) {
                 Thread.sleep(3000);
                 glPref = preferences.getBoolean(Params.PREF_GEOLOC, false);
                 if (glPref) {
-                    if (!geoloc) {
-                        geoloc = true;
+                    if (!geolocState || demarrage) {
+                        geolocState = true;
+                        demarrage = false;
                         requestLocationUpdates();
                     }
                     getPosition();
                 } else {
-                    if (geoloc) {
-                        geoloc = false;
+                    if (geolocState) {
+                        geolocState = false;
                         permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
                         if (permission == PermissionChecker.PERMISSION_GRANTED) {
                             locationManager.removeUpdates(locationListener);
@@ -131,7 +162,7 @@ public class LocationService extends IntentService {
                 geoloc.setUtilisateur(Params.connectedUser);
                 geoloc.setLatitude(lastKnownLocation.getLatitude());
                 geoloc.setLongitude(lastKnownLocation.getLongitude());
-                geolocDAO.save(geoloc);
+                geolocToAddDAO.save(geoloc);
             }
         }
 

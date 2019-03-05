@@ -3,6 +3,7 @@ package com.example.clementramond.geolocalisationclients.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -21,8 +22,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.clementramond.geolocalisationclients.MD5;
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.R;
+import com.example.clementramond.geolocalisationclients.asynctask.SynchronisationBD;
 import com.example.clementramond.geolocalisationclients.database.dao.DossierDAO;
 import com.example.clementramond.geolocalisationclients.database.dao.UtilisateurDAO;
 import com.example.clementramond.geolocalisationclients.modele.Dossier;
@@ -102,6 +105,23 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
         mProgressView = findViewById(R.id.login_progress);
 
         utilisateurDAO = new UtilisateurDAO(this);
+        if (utilisateurDAO.getAll().isEmpty()) {
+            synchroniser();
+        }
+    }
+
+    @Override
+    protected void onPostResume() {
+        isLoginActivity = true;
+        super.onPostResume();
+    }
+
+    @Override
+    public void refreshData() {
+        utilisateurDAO = new UtilisateurDAO(this);
+        dossiers.clear();
+        dossiers.addAll( new DossierDAO(this).getAll());
+        mDossierAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -223,7 +243,7 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
 
         UserLoginTask(String pseudo, String password) {
             mPseudo = pseudo;
-            mPassword = password;
+            mPassword = MD5.getMd5(password);
         }
 
         @Override
@@ -273,7 +293,8 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
                 if (editor != null) {
                     Params.dossier = dossier;
                     editor.putString(Params.PREF_DOSSIER, String.valueOf(dossier.getId())).apply();
-                    accueil();
+                    setResult(Activity.RESULT_OK);
+                    finish();
                 }
             } else if (success == INVALID_PSEUDO) {
                 mPseudoView.setError(getString(R.string.error_incorrect_pseudo));
