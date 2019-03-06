@@ -104,7 +104,9 @@ public class LocationService extends IntentService {
                                         + "&date_heure="+Params.encode(geoloc.getDateTime().format(Geolocalisation.MYSQL_DTF))
                                         + "&lat="+Params.encode(String.valueOf(geoloc.getLatitude()))
                                         + "&lon="+Params.encode(String.valueOf(geoloc.getLongitude())));
-                            geolocToAddDAO.delete(geoloc);
+                            if (SynchronisationBD.responseCode != 500 && SynchronisationBD.responseCode != -404) {
+                                geolocToAddDAO.delete(geoloc);
+                            }
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();

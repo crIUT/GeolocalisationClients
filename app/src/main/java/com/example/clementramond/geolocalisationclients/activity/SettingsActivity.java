@@ -48,6 +48,7 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         mServerAdresseView.setText(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER));
 
         mNewServerAdresseView  = findViewById(R.id.new_serveur_adress);
+        mNewServerAdresseView.setText(mServerAdresseView.getText());
 
         mGeolocSwitch = findViewById(R.id.geolocSwitch);
         mGeolocSwitch.setChecked(preferences.getBoolean(Params.PREF_GEOLOC, true));
