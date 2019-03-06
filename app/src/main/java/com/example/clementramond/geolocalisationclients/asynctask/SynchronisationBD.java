@@ -35,6 +35,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
 
-public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
+public class SynchronisationBD extends AsyncTask<String, Integer, Integer> {
 
     private static final String TAG_LOG = "ACCES WEB";
 
@@ -72,37 +73,37 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(String... args) {
+    protected Integer doInBackground(String... args) {
 
         String resultat = sendRequest("type=SELECT&nomTable=dossier");
-        if (responseCode == 500) return false;
+        if (responseCode == 500 || responseCode == -404) return responseCode;
         dossiers = csvToListeDossier(responseToCsv(resultat));
 
         resultat = sendRequest("type=SELECT&nomTable=droit");
-        if (responseCode == 500) return false;
+        if (responseCode == 500 || responseCode == -404) return responseCode;
         droits = csvToListeDroit(responseToCsv(resultat));
 
         resultat = sendRequest("type=SELECT&nomTable=utilisateur");
-        if (responseCode == 500) return false;
+        if (responseCode == 500 || responseCode == -404) return responseCode;
         utilisateurs = csvToListeUtilisateur(responseToCsv(resultat));
 
         if (Params.dossier != null) {
             String prefix = String.format("%03d", Params.dossier.getId()) + "_";
 
             resultat = sendRequest("type=SELECT&nomTable=" + prefix + "categorie");
-            if (responseCode == 500) return false;
+            if (responseCode == 500 || responseCode == -404) return responseCode;
             categories = csvToListeCategorie(responseToCsv(resultat));
 
             resultat = sendRequest("type=SELECT&nomTable=" + prefix + "sous_categorie");
-            if (responseCode == 500) return false;
+            if (responseCode == 500 || responseCode == -404) return responseCode;
             sousCategories = csvToListeSousCategorie(responseToCsv(resultat));
 
             resultat = sendRequest("type=SELECT&nomTable=" + prefix + "client");
-            if (responseCode == 500) return false;
+            if (responseCode == 500 || responseCode == -404) return responseCode;
             clients = csvToListeClient(responseToCsv(resultat));
 
             resultat = sendRequest("type=SELECT&nomTable=" + prefix + "geoloc");
-            if (responseCode == 500) return false;
+            if (responseCode == 500 || responseCode == -404) return responseCode;
             geolocs = csvToListeGeoloc(responseToCsv(resultat));
         }
 
@@ -152,15 +153,20 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
             }
         }
 
-        return true;
+        return 0;
     }
 
 
     @Override
-    protected void onPostExecute(Boolean resultat) {
+    protected void onPostExecute(Integer resultat) {
         activiteParente.loading(false);
-        if (!resultat) {
-            Toast.makeText(activiteParente, "La synchronisation n'a pas été effectuée.",
+        if (resultat == 500) {
+            Toast.makeText(activiteParente, "La synchronisation n'a pas été effectuée :\n" +
+                            "Le serveur a rencontré un problème.",
+                    Toast.LENGTH_SHORT).show();
+        } else if (resultat == -404) {
+            Toast.makeText(activiteParente, "La synchronisation n'a pas été effectuée :\n" +
+                            "Vérifiez votre connexion internet.",
                     Toast.LENGTH_SHORT).show();
         }
         activiteParente.refreshData();
@@ -212,6 +218,9 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         } catch (MalformedURLException e) {
             // une chaîne vide sera renvoyée
             Log.i(TAG_LOG, "url mal formé");
+        } catch (UnknownHostException e) {
+            responseCode = -404;
+            Log.i(TAG_LOG, e.getMessage());
         } catch (IOException e) {
             Log.i(TAG_LOG, "problème lecture réponse");
         } finally {

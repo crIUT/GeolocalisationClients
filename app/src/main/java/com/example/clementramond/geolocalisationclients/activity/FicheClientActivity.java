@@ -140,8 +140,7 @@ public class FicheClientActivity extends OptionsActivity {
     }
 
     public void setCoordonnees() {
-        final Toast TOAST_OK = Toast.makeText(getApplicationContext(), "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT);
-        final Toast TOAST_KO = Toast.makeText(this, "Votre position n'a pas pu être récupérée.", Toast.LENGTH_SHORT);
+        final Toast TOAST_RESULT = Toast.makeText(getApplicationContext(), "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT);
         if (lastKnownLocation != null) {
             client.setLatitude(lastKnownLocation.getLatitude());
             client.setLongitude(lastKnownLocation.getLongitude());
@@ -153,10 +152,16 @@ public class FicheClientActivity extends OptionsActivity {
                                     + "&idClient="+Params.encode(String.valueOf(client.getId()))
                                     + "&lat="+Params.encode(String.valueOf(client.getLatitude()))
                                     + "&lon="+Params.encode(String.valueOf(client.getLongitude())));
-                    clientDAO.update(client);
                     if (SynchronisationBD.responseCode == 500) {
-                        TOAST_KO.show();
+                        TOAST_RESULT.setText("Les coordonnées n'ont pas été enregistrées :\n" +
+                                "Le serveur a rencontré un problème.");
+                        TOAST_RESULT.show();
+                    } else if (SynchronisationBD.responseCode == -404) {
+                        TOAST_RESULT.setText("Les coordonnées n'ont pas été enregistrées :\n" +
+                                "Vérifiez votre connexion internet.");
+                        TOAST_RESULT.show();
                     } else {
+                        clientDAO.update(client);
                         activity.post(new Runnable() {
                             @Override
                             public void run() {
@@ -164,12 +169,12 @@ public class FicheClientActivity extends OptionsActivity {
                             }
                         });
                         setResult(Activity.RESULT_OK);
-                        TOAST_OK.show();
+                        TOAST_RESULT.show();
                     }
                 }
             }).start();
         } else {
-            TOAST_KO.show();
+            TOAST_RESULT.show();
         }
     }
 }

@@ -50,6 +50,7 @@ public class ListeClientActivity extends OptionsActivity implements AdapterView.
     private ArrayList<Categorie> listCategories;
     private ArrayList<SousCategorie> listSousCategories;
     private ArrayList<Client> listClients;
+    private boolean refreshRequired;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +119,10 @@ public class ListeClientActivity extends OptionsActivity implements AdapterView.
     @Override
     protected void onPostResume() {
         super.onPostResume();
+        if (refreshRequired) {
+            refreshData();
+            refreshRequired = false;
+        }
     }
 
     private void setCategories(ArrayList<Categorie> newList) {
@@ -225,7 +230,7 @@ public class ListeClientActivity extends OptionsActivity implements AdapterView.
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Params.REQ_POS_CLIENT && resultCode == Activity.RESULT_OK) {
-            synchroniser();
+            refreshRequired = true;
         }
     }
 }
