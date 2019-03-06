@@ -1,11 +1,11 @@
 package com.example.clementramond.geolocalisationclients.asynctask;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.clementramond.geolocalisationclients.MD5;
 import com.example.clementramond.geolocalisationclients.Params;
 import com.example.clementramond.geolocalisationclients.activity.OptionsActivity;
 import com.example.clementramond.geolocalisationclients.database.dao.CategorieDAO;
@@ -29,11 +29,10 @@ import org.threeten.bp.LocalDateTime;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +45,9 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
 
     private OptionsActivity activiteParente;
 
-    private SharedPreferences preferences;
+    private static SharedPreferences preferences;
+    
+    public static int responseCode;
 
     private ArrayList<Dossier> dossiers;
     private ArrayList<Droit> droits;
@@ -70,36 +71,36 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     @Override
     protected Boolean doInBackground(String... args) {
 
-        String resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=dossier");
-        if (resultat.isEmpty()) return false;
-        dossiers = csvToListeDossier(responseToCsv(resultat.toString()));
+        String resultat = sendRequest("/apiBD.php?type=SELECT&nomTable=dossier");
+        if (responseCode == 500) return false;
+        dossiers = csvToListeDossier(responseToCsv(resultat));
 
         resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=droit");
-        if (resultat.isEmpty()) return false;
-        droits = csvToListeDroit(responseToCsv(resultat.toString()));
+        if (responseCode == 500) return false;
+        droits = csvToListeDroit(responseToCsv(resultat));
 
         resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=utilisateur");
-        if (resultat.isEmpty()) return false;
-        utilisateurs = csvToListeUtilisateur(responseToCsv(resultat.toString()));
+        if (responseCode == 500) return false;
+        utilisateurs = csvToListeUtilisateur(responseToCsv(resultat));
 
         if (Params.dossier != null) {
             String prefix = String.format("%03d", Params.dossier.getId()) + "_";
 
             resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "categorie");
-            if (resultat.isEmpty()) return false;
-            categories = csvToListeCategorie(responseToCsv(resultat.toString()));
+            if (responseCode == 500) return false;
+            categories = csvToListeCategorie(responseToCsv(resultat));
 
             resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "sous_categorie");
-            if (resultat.isEmpty()) return false;
-            sousCategories = csvToListeSousCategorie(responseToCsv(resultat.toString()));
+            if (responseCode == 500) return false;
+            sousCategories = csvToListeSousCategorie(responseToCsv(resultat));
 
             resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "client");
-            if (resultat.isEmpty()) return false;
-            clients = csvToListeClient(responseToCsv(resultat.toString()));
+            if (responseCode == 500) return false;
+            clients = csvToListeClient(responseToCsv(resultat));
 
             resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "geoloc");
-            if (resultat.isEmpty()) return false;
-            geolocs = csvToListeGeoloc(responseToCsv(resultat.toString()));
+            if (responseCode == 500) return false;
+            geolocs = csvToListeGeoloc(responseToCsv(resultat));
         }
 
         new GeolocClientsDBDAO(activiteParente).deleteTablesContent();
@@ -156,8 +157,7 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     protected void onPostExecute(Boolean resultat) {
         activiteParente.loading(false);
         if (!resultat) {
-            Toast.makeText(activiteParente, "La synchronisation n'a pas pu être effectuée.\n"
-                                                + "Vérifiez votre connexion internet.",
+            Toast.makeText(activiteParente, "La synchronisation n'a pas été effectuée.",
                     Toast.LENGTH_SHORT).show();
         }
         activiteParente.refreshData();
@@ -165,17 +165,26 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         super.onPostExecute(resultat);
     }
 
-    public static String sendRequest(String requestURL) {
+    public static String sendRequest(String requestParams) {
         StringBuilder resultat = new StringBuilder();
 
         HttpURLConnection connexion = null;
         BufferedReader reader = null;
 
-        // Simulate network access.
         try {
+            String requestURL = preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)
+                    + "/apiBD.php";
             URL url = new URL(requestURL);
             connexion = (HttpURLConnection) url.openConnection();
-            connexion.connect();
+            connexion.setRequestMethod("POST");
+
+            // todo
+            connexion.setDoOutput(true);
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(connexion.getOutputStream());
+            outputStreamWriter.write(requestParams);
+            outputStreamWriter.flush();
+
+            responseCode = connexion.getResponseCode();
 
             reader = new BufferedReader(
                 new InputStreamReader(connexion.getInputStream(), StandardCharsets.UTF_8));
@@ -206,19 +215,21 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     }
 
     private ArrayList<ArrayList<String>> responseToCsv(String csv) {
-        String[] lignes = csv.split("\n");
-        String[] colonnes;
-        ArrayList<String> nouvLigne;
-
         ArrayList<ArrayList<String>> lignesColonnes = new ArrayList<>();
 
-        for (String ligne : lignes) {
-            colonnes = ligne.split(";", 10);
-            nouvLigne = new ArrayList<>();
-            for (String colonne : colonnes) {
-                nouvLigne.add(colonne);
+        if (!csv.isEmpty()) {
+            String[] lignes = csv.split("\n");
+            String[] colonnes;
+            ArrayList<String> nouvLigne;
+
+            for (String ligne : lignes) {
+                colonnes = ligne.split(";", 10);
+                nouvLigne = new ArrayList<>();
+                for (String colonne : colonnes) {
+                    nouvLigne.add(colonne);
+                }
+                lignesColonnes.add(nouvLigne);
             }
-            lignesColonnes.add(nouvLigne);
         }
         return lignesColonnes;
     }

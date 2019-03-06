@@ -83,6 +83,17 @@ public class FicheClientActivity extends OptionsActivity {
 
         client = getIntent().getExtras().getParcelable(Params.EXT_CLIENT);
 
+        setViews();
+    }
+
+    @Override
+    public void refreshData() {
+        clientDAO = new ClientDAO(this);
+        client = clientDAO.getFromId(client.getId());
+        setViews();
+    }
+
+    private void setViews() {
         mNomView.setText(client.getNom());
         mPrenomView.setText(client.getPrenom());
         mCategorieView.setText(client.getSousCategorie().getCategorie().getNom()
@@ -92,11 +103,6 @@ public class FicheClientActivity extends OptionsActivity {
         mTelPortableView.setText(client.getTelephonePortable());
         mLatitudeView.setText(client.getLatitude() == null ? "inconnue" : client.getLatitude() + "");
         mLongitudeView.setText(client.getLongitude() == null ? "inconnue" : client.getLongitude() + "");
-    }
-
-    @Override
-    public void refreshData() {
-        clientDAO = new ClientDAO(this);
     }
 
     public void onClickItineraire(View view) {
@@ -134,10 +140,11 @@ public class FicheClientActivity extends OptionsActivity {
     }
 
     public void setCoordonnees() {
+        final Toast TOAST_OK = Toast.makeText(getApplicationContext(), "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT);
+        final Toast TOAST_KO = Toast.makeText(this, "Votre position n'a pas pu être récupérée.", Toast.LENGTH_SHORT);
         if (lastKnownLocation != null) {
             client.setLatitude(lastKnownLocation.getLatitude());
             client.setLongitude(lastKnownLocation.getLongitude());
-            final Toast TOAST_OK = Toast.makeText(getApplicationContext(), "Les coordonnées ont bien été enregistrées.", Toast.LENGTH_SHORT);
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -148,12 +155,22 @@ public class FicheClientActivity extends OptionsActivity {
                                     + "&idClient="+Params.encode(String.valueOf(client.getId()))
                                     + "&lat="+Params.encode(String.valueOf(client.getLatitude()))
                                     + "&lon="+Params.encode(String.valueOf(client.getLongitude())));
-                    setResult(Activity.RESULT_OK);
-                    TOAST_OK.show();
+                    if (SynchronisationBD.responseCode == 500) {
+                        TOAST_KO.show();
+                    } else {
+                        activity.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshData();
+                            }
+                        });
+                        setResult(Activity.RESULT_OK);
+                        TOAST_OK.show();
+                    }
                 }
             }).start();
         } else {
-            Toast.makeText(this, "Votre position n'a pas pu être récupérée.", Toast.LENGTH_SHORT).show();
+            TOAST_KO.show();
         }
     }
 }

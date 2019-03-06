@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 public abstract class LoadingActivity extends AppCompatActivity {
 
-    private View activity = null,
+    public View activity = null,
                  loading = null;
 
     public void loading(boolean b) {

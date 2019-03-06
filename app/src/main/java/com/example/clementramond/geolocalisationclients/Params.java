@@ -26,6 +26,7 @@ public class Params {
     public final static String EXT_CLIENT = "client";
 
     public final static String DEFAULT_SERVER = "http://www.mmsplanning.com";
+    public final static String API_URL = "/apiBD.php";
 
     public static Utilisateur connectedUser = null;
     public static Dossier dossier = null;
