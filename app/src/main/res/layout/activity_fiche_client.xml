@@ -15,164 +15,170 @@
         <include layout="@layout/loading_db"/>
     </LinearLayout>
 
-    <TableLayout
-        android:id="@+id/activity"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:stretchColumns="1">
+        android:layout_height="match_parent">
 
-        <TableRow>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/FicheClientNomChamp"
-                android:text="Nom : "/>
-            <TextView
-                android:id="@+id/nom"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="RAMOND"/>
-        </TableRow>
+        <TableLayout
+            android:id="@+id/activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:stretchColumns="1">
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/FicheClientNomChamp"
-                android:text="Prénom : "/>
-            <TextView
-                android:id="@+id/prenom"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="Clément"/>
-        </TableRow>
+            <TableRow>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Nom : "/>
+                <TextView
+                    android:id="@+id/nom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="RAMOND"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/FicheClientNomChamp"
-                android:text="Catégorie : "/>
-            <TextView
-                android:id="@+id/categorie"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="LPMMS - 1ère année"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Prénom : "/>
+                <TextView
+                    android:id="@+id/prenom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="Clément"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/FicheClientNomChamp"
-                android:text="Code Postal : "/>
-            <TextView
-                android:id="@+id/code_postal"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="81430"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Catégorie : "/>
+                <TextView
+                    android:id="@+id/categorie"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="LPMMS - 1ère année"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/FicheClientNomChamp"
-                android:text="Téléphone fixe : "/>
-            <TextView
-                android:id="@+id/fixe"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="0563791472"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Code Postal : "/>
+                <TextView
+                    android:id="@+id/code_postal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="81430"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="@dimen/shortMargin"
-                style="@style/FicheClientNomChamp"
-                android:text="Téléphone portable : "/>
-            <TextView
-                android:id="@+id/portable"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="0787067052"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Téléphone fixe : "/>
+                <TextView
+                    android:id="@+id/fixe"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="0563791472"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/FicheClientNomChamp"
-                android:text="Coordonnées : "/>/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/shortMargin"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Téléphone portable : "/>
+                <TextView
+                    android:id="@+id/portable"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="0787067052"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/shortMargin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                style="@style/FicheClientSousChamp"
-                android:text="Latitude : "/>
-            <TextView
-                android:id="@+id/latitude"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="44.360111"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClientNomChamp"
+                    android:text="Coordonnées : "/>/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/shortMargin">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                style="@style/FicheClientSousChamp"
-                android:text="Longitude : "/>
-            <TextView
-                android:id="@+id/longitude"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                style="@style/FicheClient"
-                android:text="2.5768032"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/shortMargin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    style="@style/FicheClientSousChamp"
+                    android:text="Latitude : "/>
+                <TextView
+                    android:id="@+id/latitude"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="44.360111"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/activity_vertical_margin">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Itinéraire"
-                android:layout_column="1"
-                android:onClick="onClickItineraire"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/shortMargin">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    style="@style/FicheClientSousChamp"
+                    android:text="Longitude : "/>
+                <TextView
+                    android:id="@+id/longitude"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/FicheClient"
+                    android:text="2.5768032"/>
+            </TableRow>
 
-        <TableRow
-            android:layout_marginTop="@dimen/shortMargin">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Coordonnées"
-                android:layout_column="1"
-                android:onClick="onClickCoordonnees"/>
-        </TableRow>
+            <TableRow
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Itinéraire"
+                    android:layout_column="1"
+                    android:onClick="onClickItineraire"/>
+            </TableRow>
 
-    </TableLayout>
+            <TableRow
+                android:layout_marginTop="@dimen/shortMargin">
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Coordonnées"
+                    android:layout_column="1"
+                    android:onClick="onClickCoordonnees"/>
+            </TableRow>
+
+        </TableLayout>
+
+    </ScrollView>
 
 </LinearLayout>

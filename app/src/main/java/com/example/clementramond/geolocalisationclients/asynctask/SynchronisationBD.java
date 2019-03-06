@@ -1,5 +1,6 @@
 package com.example.clementramond.geolocalisationclients.asynctask;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -27,6 +28,7 @@ import com.example.clementramond.geolocalisationclients.modele.Utilisateur;
 import org.threeten.bp.LocalDateTime;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -37,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 
 public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
@@ -71,34 +74,34 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
     @Override
     protected Boolean doInBackground(String... args) {
 
-        String resultat = sendRequest("/apiBD.php?type=SELECT&nomTable=dossier");
+        String resultat = sendRequest("type=SELECT&nomTable=dossier");
         if (responseCode == 500) return false;
         dossiers = csvToListeDossier(responseToCsv(resultat));
 
-        resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=droit");
+        resultat = sendRequest("type=SELECT&nomTable=droit");
         if (responseCode == 500) return false;
         droits = csvToListeDroit(responseToCsv(resultat));
 
-        resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=utilisateur");
+        resultat = sendRequest("type=SELECT&nomTable=utilisateur");
         if (responseCode == 500) return false;
         utilisateurs = csvToListeUtilisateur(responseToCsv(resultat));
 
         if (Params.dossier != null) {
             String prefix = String.format("%03d", Params.dossier.getId()) + "_";
 
-            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "categorie");
+            resultat = sendRequest("type=SELECT&nomTable=" + prefix + "categorie");
             if (responseCode == 500) return false;
             categories = csvToListeCategorie(responseToCsv(resultat));
 
-            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "sous_categorie");
+            resultat = sendRequest("type=SELECT&nomTable=" + prefix + "sous_categorie");
             if (responseCode == 500) return false;
             sousCategories = csvToListeSousCategorie(responseToCsv(resultat));
 
-            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "client");
+            resultat = sendRequest("type=SELECT&nomTable=" + prefix + "client");
             if (responseCode == 500) return false;
             clients = csvToListeClient(responseToCsv(resultat));
 
-            resultat = sendRequest(preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)+ "/apiBD.php?type=SELECT&nomTable=" + prefix + "geoloc");
+            resultat = sendRequest("type=SELECT&nomTable=" + prefix + "geoloc");
             if (responseCode == 500) return false;
             geolocs = csvToListeGeoloc(responseToCsv(resultat));
         }
@@ -165,29 +168,42 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         super.onPostExecute(resultat);
     }
 
-    public static String sendRequest(String requestParams) {
+    public String sendRequest(String requestParams) {
+        return sendRequest(activiteParente.preferences
+                .getString(Params.PREF_SERVER, Params.DEFAULT_SERVER), requestParams);
+    }
+
+    public static String sendRequest(SharedPreferences preferences, String requestParams) {
+        return sendRequest(preferences
+                .getString(Params.PREF_SERVER, Params.DEFAULT_SERVER), requestParams);
+    }
+
+    private static String sendRequest(String serverURL, String requestParams) {
         StringBuilder resultat = new StringBuilder();
 
-        HttpURLConnection connexion = null;
+        HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
         try {
-            String requestURL = preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)
-                    + "/apiBD.php";
+            // Define the server endpoint to send the HTTP request to
+            String requestURL = serverURL + "/apiBD.php";
             URL url = new URL(requestURL);
-            connexion = (HttpURLConnection) url.openConnection();
-            connexion.setRequestMethod("POST");
+            urlConnection = (HttpURLConnection)url.openConnection();
 
-            // todo
-            connexion.setDoOutput(true);
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(connexion.getOutputStream());
-            outputStreamWriter.write(requestParams);
-            outputStreamWriter.flush();
+            // Indicate that we want to write to the HTTP request body
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
 
-            responseCode = connexion.getResponseCode();
+            // Writing the post data to the HTTP request body
+            BufferedWriter httpRequestBodyWriter =
+                    new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream()));
+            httpRequestBodyWriter.write(requestParams+"&mdp="+ Params.encode(MD5.getMd5("X+O%ih4fGt&@5s0t")));
+            httpRequestBodyWriter.close();
+
+            responseCode = urlConnection.getResponseCode();
 
             reader = new BufferedReader(
-                new InputStreamReader(connexion.getInputStream(), StandardCharsets.UTF_8));
+                new InputStreamReader(urlConnection.getInputStream(), StandardCharsets.UTF_8));
             String chaineLue = "";
             while ((chaineLue = reader.readLine()) != null) {
                 resultat.append(chaineLue+"\n");
@@ -199,8 +215,8 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Boolean> {
         } catch (IOException e) {
             Log.i(TAG_LOG, "problème lecture réponse");
         } finally {
-            if (connexion != null) {
-                connexion.disconnect();
+            if (urlConnection != null) {
+                urlConnection.disconnect();
             }
             try {
                 if (reader != null) {

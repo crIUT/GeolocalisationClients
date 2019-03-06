@@ -99,9 +99,7 @@ public class LocationService extends IntentService {
                         Thread.sleep(60000);
                         geolocs = geolocToAddDAO.getAll();
                         for (Geolocalisation geoloc : geolocs) {
-                            SynchronisationBD.sendRequest(
-                                preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)
-                                        + "/apiBD.php?type=INSERT"
+                            SynchronisationBD.sendRequest(preferences, "type=INSERT"
                                         + "&pseudoUtilisateur="+Params.encode(geoloc.getUtilisateur().getPseudo())
                                         + "&date_heure="+Params.encode(geoloc.getDateTime().format(Geolocalisation.MYSQL_DTF))
                                         + "&lat="+Params.encode(String.valueOf(geoloc.getLatitude()))

@@ -148,20 +148,19 @@ public class FicheClientActivity extends OptionsActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    SynchronisationBD.sendRequest(
-                            preferences.getString(Params.PREF_SERVER, Params.DEFAULT_SERVER)
-                                    + "/apiBD.php?type=UPDATE"
+                    SynchronisationBD.sendRequest(preferences, "type=UPDATE"
                                     + "&dossier="+Params.encode(String.valueOf(Params.dossier.getId()))
                                     + "&idClient="+Params.encode(String.valueOf(client.getId()))
                                     + "&lat="+Params.encode(String.valueOf(client.getLatitude()))
                                     + "&lon="+Params.encode(String.valueOf(client.getLongitude())));
+                    clientDAO.update(client);
                     if (SynchronisationBD.responseCode == 500) {
                         TOAST_KO.show();
                     } else {
                         activity.post(new Runnable() {
                             @Override
                             public void run() {
-                                refreshData();
+                                setViews();
                             }
                         });
                         setResult(Activity.RESULT_OK);
