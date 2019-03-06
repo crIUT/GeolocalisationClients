@@ -55,17 +55,14 @@ public abstract class OptionsActivity extends LoadingActivity {
             syncRequired = false;
         }
         if (!isLoginActivity) {
+            Dossier dossierUser;
             if (Params.connectedUser == null) {
-                String pseudo = preferences.getString(Params.PREF_USER, null);
-                Params.connectedUser =
-                        (pseudo == null) ? null : new UtilisateurDAO(this).getFromPseudo(pseudo);
-                if (Params.connectedUser == null) {
-                    connexion();
-                    return;
-                }
+                connexion();
+                dossierUser = null;
+            } else {
+                dossierUser = Params.connectedUser.getDossier();
             }
 
-            Dossier dossierUser = Params.connectedUser.getDossier();
             if (Params.dossier == null && dossierUser != null) {
                 Params.dossier = dossierUser;
             } else {
@@ -107,7 +104,6 @@ public abstract class OptionsActivity extends LoadingActivity {
         Params.connectedUser = null;
         Params.dossier = null;
         preferences.edit()
-            .putString(Params.PREF_USER, null)
             .putString(Params.PREF_DOSSIER, null)
             .apply();
         connexion();

@@ -18,7 +18,6 @@ public class Params {
 
     public final static String PREFS = "prefs";
     public final static String PREF_GEOLOC = "geoloc";
-    public final static String PREF_USER = "user";
     public final static String PREF_DOSSIER = "dossier";
     public final static String PREF_SERVER = "server";
 
@@ -26,7 +25,6 @@ public class Params {
     public final static String EXT_CLIENT = "client";
 
     public final static String DEFAULT_SERVER = "http://www.mmsplanning.com";
-    public final static String API_URL = "/apiBD.php";
 
     public static Utilisateur connectedUser = null;
     public static Dossier dossier = null;

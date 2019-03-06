@@ -280,7 +280,6 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
             if (success == CONNEXION_OK) {
                 Params.connectedUser = utilisateur;
                 SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(Params.PREF_USER, utilisateur.getPseudo());
                 if (utilisateur.getDroit().getDroit().equals(Droit.DROITS[2])) {
                     if (!selectionDossier) {
                         selectDossier(true);
