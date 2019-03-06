@@ -48,8 +48,6 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Integer> {
     private static final String TAG_LOG = "ACCES WEB";
 
     private OptionsActivity activiteParente;
-
-    private static SharedPreferences preferences;
     
     public static int responseCode;
 
@@ -69,7 +67,6 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Integer> {
     protected void onPreExecute() {
         super.onPreExecute();
         activiteParente.loading(true);
-        preferences = activiteParente.preferences;
     }
 
     @Override
@@ -172,6 +169,16 @@ public class SynchronisationBD extends AsyncTask<String, Integer, Integer> {
         activiteParente.refreshData();
 
         super.onPostExecute(resultat);
+    }
+
+    public static boolean connexionOk(SharedPreferences preferences) {
+        sendRequest(preferences, "");
+        return (responseCode < 400 && responseCode != -404);
+    }
+
+    public static boolean connexionOk(String serverURL) {
+        sendRequest(serverURL, "");
+        return (responseCode < 400 && responseCode != -404);
     }
 
     public String sendRequest(String requestParams) {

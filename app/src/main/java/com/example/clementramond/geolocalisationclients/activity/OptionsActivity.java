@@ -30,12 +30,15 @@ public abstract class OptionsActivity extends LoadingActivity {
 
     private boolean syncRequired = false;
 
+    public boolean connectionTested = false;
+
     private ComponentName locationServiceComponentName;
     private ComponentName serviceComponentName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        connectionTested = false;
         locationServiceComponentName = new ComponentName(this, LocationService.class);
         preferences = getSharedPreferences(Params.PREFS, Activity.MODE_PRIVATE);
         if (!preferences.contains(Params.PREF_GEOLOC)) {
@@ -55,10 +58,10 @@ public abstract class OptionsActivity extends LoadingActivity {
             syncRequired = false;
         }
         if (!isLoginActivity) {
-            Dossier dossierUser;
+            Dossier dossierUser = null;
             if (Params.connectedUser == null) {
                 connexion();
-                dossierUser = null;
+                return;
             } else {
                 dossierUser = Params.connectedUser.getDossier();
             }
@@ -102,10 +105,6 @@ public abstract class OptionsActivity extends LoadingActivity {
 
     public void deconnexion() {
         Params.connectedUser = null;
-        Params.dossier = null;
-        preferences.edit()
-            .putString(Params.PREF_DOSSIER, null)
-            .apply();
         connexion();
     }
 

@@ -161,7 +161,7 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(pseudo, password);
+            mAuthTask = new UserLoginTask(this, pseudo, password);
             mAuthTask.execute((Void) null);
         }
     }
@@ -231,6 +231,7 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
 
+        private Activity activiteParente;
         private final String mPseudo;
         private final String mPassword;
 
@@ -241,7 +242,8 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
 
         private Utilisateur utilisateur;
 
-        UserLoginTask(String pseudo, String password) {
+        UserLoginTask(Activity parent, String pseudo, String password) {
+            activiteParente = parent;
             mPseudo = pseudo;
             mPassword = MD5.getMd5(password);
         }
@@ -290,10 +292,14 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
                     dossier = utilisateur.getDossier();
                 }
                 if (editor != null) {
-                    Params.dossier = dossier;
-                    editor.putString(Params.PREF_DOSSIER, String.valueOf(dossier.getId())).apply();
-                    setResult(Activity.RESULT_OK);
-                    finish();
+                    editor.apply();
+                    if (Params.dossier == null || dossier.getId() != Params.dossier.getId()) {
+                        new TestConnection(activiteParente).execute();
+                    } else {
+                        setResult(Activity.RESULT_OK);
+                        finish();
+                    }
+
                 }
             } else if (success == INVALID_PSEUDO) {
                 mPseudoView.setError(getString(R.string.error_incorrect_pseudo));
@@ -310,6 +316,49 @@ public class LoginActivity extends OptionsActivity implements AdapterView.OnItem
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+        public class TestConnection extends AsyncTask<String, Integer, Boolean> {
+
+            private Activity activiteParente;
+            private String serverUrl;
+            private boolean connexionOk;
+
+            public TestConnection(Activity parent) {
+                activiteParente = parent;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                connexionOk = false;
+            }
+
+            @Override
+            protected Boolean doInBackground(String... args) {
+                if (args.length >= 1) {
+                    serverUrl = args[0];
+                } else {
+                    serverUrl = preferences
+                            .getString(Params.PREF_SERVER, Params.DEFAULT_SERVER);
+                }
+                return SynchronisationBD.connexionOk(serverUrl);
+            }
+
+
+            @Override
+            protected void onPostExecute(Boolean resultat) {
+                connexionOk = resultat;
+                if (connexionOk) {
+                    Params.dossier = dossier;
+                    preferences.edit().putString(Params.PREF_DOSSIER, String.valueOf(dossier.getId())).apply();
+                    setResult(Activity.RESULT_OK);
+                    finish();
+                } else  {
+                    Toast.makeText(activiteParente, "Le dossier est indisponible :\n" +
+                            "Problème d'accès au serveur.", Toast.LENGTH_SHORT).show();
+                }
+                super.onPostExecute(resultat);
+            }
         }
     }
 }
